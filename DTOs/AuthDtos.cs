@@ -34,6 +34,6 @@ public class AuthResponseDto
 {
     public required string Token { get; set; }
     public string? RefreshToken { get; set; }
-    public string UserId { get; set; }
+    public required string UserId { get; set; }
     public string? Username { get; set; }
 }

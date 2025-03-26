@@ -62,12 +62,12 @@ public class AuthService
 
     public async Task<AuthResponseDto> Login(LoginDto loginDto)
     {
-        // Console.WriteLine($"Received Login request for {loginDto.Email}");
+        Console.WriteLine($"Received Login request for {loginDto.Email}");
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == loginDto.Email.ToLower());
 
         if (user == null)
         {
-            // Console.WriteLine("User not found");
+            Console.WriteLine("User not found");
             throw new Exception("Invalid email or password");
         }
         // VERIFY PASSWORD
@@ -83,7 +83,7 @@ public class AuthService
         // GENERATE JWT TOKEN
         var token = GenerateJwtToken(user);
 
-        // Console.WriteLine("Login successful");
+        Console.WriteLine("Login successful");
 
         return new AuthResponseDto
         {
@@ -121,7 +121,7 @@ public class AuthService
             expires: DateTime.UtcNow.AddDays(7),
             signingCredentials: creds
         );
-        // Console.WriteLine($"The token: {token}");
+        Console.WriteLine($"The token: {token}");
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
