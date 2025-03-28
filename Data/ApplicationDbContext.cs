@@ -12,7 +12,7 @@ namespace WSFBackendApi.Data
 
         // PREDEFINED DATABASE TABLES STRUCTURE
         public DbSet<User> Users { get; set; }
-
+        public DbSet<Location> Locations { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -23,10 +23,11 @@ namespace WSFBackendApi.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            // ENSURE USER ID IS UNIQUE IN THE DB
-            modelBuilder.Entity<User>()
-                .Property(u => u.Id)
-                .HasDefaultValueSql("NEWID");
+            modelBuilder.Entity<Location>()
+                .HasOne(l => l.User)
+                .WithMany(u => u.Locations)
+                .HasForeignKey(l => l.UserId)
+                .IsRequired();
         }
     }
 }

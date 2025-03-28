@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ejemb\\documents\\server\\WSFBackendApi\\WSFBackendApi.csproj": {}
+    "C:\\Users\\ejemb\\Documents\\Server\\WSFBackendApi\\WSFBackendApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ejemb\\documents\\server\\WSFBackendApi\\WSFBackendApi.csproj": {
+    "C:\\Users\\ejemb\\Documents\\Server\\WSFBackendApi\\WSFBackendApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ejemb\\documents\\server\\WSFBackendApi\\WSFBackendApi.csproj",
+        "projectUniqueName": "C:\\Users\\ejemb\\Documents\\Server\\WSFBackendApi\\WSFBackendApi.csproj",
         "projectName": "WSFBackendApi",
-        "projectPath": "C:\\Users\\ejemb\\documents\\server\\WSFBackendApi\\WSFBackendApi.csproj",
+        "projectPath": "C:\\Users\\ejemb\\Documents\\Server\\WSFBackendApi\\WSFBackendApi.csproj",
         "packagesPath": "C:\\Users\\ejemb\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ejemb\\documents\\server\\WSFBackendApi\\obj\\",
+        "outputPath": "C:\\Users\\ejemb\\Documents\\Server\\WSFBackendApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\ejemb\\AppData\\Roaming\\NuGet\\NuGet.Config"
