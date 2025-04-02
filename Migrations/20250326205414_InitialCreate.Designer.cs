@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WSFBackendApi.Data;
 
@@ -11,9 +12,11 @@ using WSFBackendApi.Data;
 namespace WSFBackendApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250326205414_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,10 +44,7 @@ namespace WSFBackendApi.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsVerified")
+                    b.Property<bool>("IsAdminLocation")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<double>("Latitude")
@@ -65,7 +65,7 @@ namespace WSFBackendApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Location");
                 });
 
             modelBuilder.Entity("WSFBackendApi.Models.User", b =>
@@ -73,9 +73,6 @@ namespace WSFBackendApi.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
-
-                    b.Property<string>("AvatarUrl")
-                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -99,13 +96,6 @@ namespace WSFBackendApi.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("longtext");
 

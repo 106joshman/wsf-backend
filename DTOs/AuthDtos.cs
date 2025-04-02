@@ -34,6 +34,13 @@ public class AuthResponseDto
 {
     public required string Token { get; set; }
     public string? RefreshToken { get; set; }
-    public required string UserId { get; set; }
-    public string? Username { get; set; }
+    public Guid UserId { get; set; }
+    public string? First_name { get; set; }
+    public string? Last_name { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? AvatarUrl { get; set; }
+    public string? Email { get; set; }
+    public required string Role { get; set; } = "User";
+    public DateTime CreatedAt { get; set; }
+    public DateTime? LastLogin { get; set; }
 }

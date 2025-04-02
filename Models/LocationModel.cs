@@ -5,7 +5,7 @@ namespace WSFBackendApi.Models;
 public class Location
 {
     [Key]
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     [Required]
     [StringLength(100)]
@@ -21,16 +21,18 @@ public class Location
     [Required]
     public double Longitude { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
+    public bool IsVerified { get; set; } = false;
+
     [StringLength(200)]
     public required string Address { get; set; }
 
     // FOREIGN KEY FOR USER
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
 
     // NAVIGATION PROPERTY FOR USER
     public required User User { get; set; }
 
-    // ADDITIONAL METADATA
-    public bool IsAdminLocation { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

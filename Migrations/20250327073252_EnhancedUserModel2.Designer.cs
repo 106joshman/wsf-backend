@@ -12,8 +12,8 @@ using WSFBackendApi.Data;
 namespace WSFBackendApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250326092748_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250327073252_EnhancedUserModel2")]
+    partial class EnhancedUserModel2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,9 @@ namespace WSFBackendApi.Migrations
 
             modelBuilder.Entity("WSFBackendApi.Models.Location", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -60,8 +58,8 @@ namespace WSFBackendApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 
@@ -72,11 +70,12 @@ namespace WSFBackendApi.Migrations
 
             modelBuilder.Entity("WSFBackendApi.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("char(36)");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -101,6 +100,9 @@ namespace WSFBackendApi.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
