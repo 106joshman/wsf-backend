@@ -24,6 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(
 
 // AUTHENTICATION SERVICE REGISTRATION
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
 
 // CONFIGURE JWT AUTHENTICATION
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
