@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WSFBackendApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+41a7200f1c4daba9c2323131030325c06658d77a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c8cdeaaa42f017756fbf952a5cb6e9d740b08f7")]
 [assembly: System.Reflection.AssemblyProductAttribute("WSFBackendApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WSFBackendApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
