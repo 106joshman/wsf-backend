@@ -21,6 +21,12 @@ public class User
     [DataType(DataType.Password)]
     public required string Password { get; set; }
 
+    public string? PhoneNumber { get; set; }
+
+    public string? AvatarUrl { get; set; }
+
+    public required string Role { get; set; } = "user";
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public bool IsActive { get; set; } = true;

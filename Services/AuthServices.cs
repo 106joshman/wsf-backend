@@ -22,6 +22,7 @@ public class AuthService
 
     public async Task<AuthResponseDto> Register(RegisterDto registerDto)
     {
+        Console.WriteLine($"Received Login request for {registerDto.Email}");
         // VALIDATE EMAIL AND PASSWORD INPUT
         if (string.IsNullOrWhiteSpace(registerDto.Email) || string.IsNullOrWhiteSpace(registerDto.Password))
         {
@@ -44,6 +45,7 @@ public class AuthService
             Last_name = registerDto.Last_name,
             Email = registerDto.Email,
             Password = passwordHash,
+            Role = "User",
         };
 
         _context.Users.Add(user);
@@ -55,8 +57,16 @@ public class AuthService
         return new AuthResponseDto
         {
             Token = token,
-            UserId = user.Id.ToString(),
-            Username = $"{user.First_name} {user.Last_name}"
+            UserId = user.Id,
+            // RefreshToken = user.RefreshToken
+            First_name = user.First_name,
+            Last_name = user.Last_name,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            CreatedAt = user.CreatedAt,
+            LastLogin = user.LastLogin,
+            Role = user.Role
         };
     }
 
@@ -88,8 +98,16 @@ public class AuthService
         return new AuthResponseDto
         {
             Token = token,
-            UserId = user.Id.ToString(),
-            Username = $"{user.First_name} {user.Last_name}"
+            UserId = user.Id,
+            // RefreshToken = user.RefreshToken
+            First_name = user.First_name,
+            Last_name = user.Last_name,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            CreatedAt = user.CreatedAt,
+            LastLogin = user.LastLogin,
+            Role = user.Role
         };
     }
 
