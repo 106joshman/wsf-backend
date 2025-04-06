@@ -22,7 +22,7 @@ public class UserService
 
         if (user == null)
         {
-            throw new Exception("User not found");
+            throw new KeyNotFoundException("User not found");
         }
 
         // Update fields if they are not null in the DTO
@@ -38,7 +38,9 @@ public class UserService
         if (!string.IsNullOrWhiteSpace(updateDto.AvatarUrl))
             user.AvatarUrl = updateDto.AvatarUrl;
 
-        // Save changes
+        // SAVE UPDATE MADE
+        _context.Users.Update(user);
+        // UPDATE CHANGES TO THE DATABASE
         await _context.SaveChangesAsync();
 
         // Map to response DTO

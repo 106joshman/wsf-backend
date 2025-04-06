@@ -23,10 +23,20 @@ public class AuthController : ControllerBase
             // Console.WriteLine("Registration successful"); // Debugging log
             return Ok(response);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            // 401 ERROR
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            // 404 ERROR
+            return NotFound(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             // Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -40,10 +50,20 @@ public class AuthController : ControllerBase
             // Console.WriteLine($"Login successful for : {loginDto.Email}");
             return Ok(response);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            // 401 ERROR
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            // 404 ERROR
+            return NotFound(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
-            // Console.WriteLine($"Login error: {ex.Message}");
-            return BadRequest(ex.Message);
+            // Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

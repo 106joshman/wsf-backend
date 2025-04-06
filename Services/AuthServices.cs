@@ -32,7 +32,7 @@ public class AuthService
         // CHECK IF EMAIL ALREADY EXISTS
         if (await _context.Users.AnyAsync(x => x.Email == registerDto.Email))
         {
-            throw new Exception("Email already exists");
+            throw new UnauthorizedAccessException("Email already exists");
         }
 
         // HASH PASSWORD BEFORE STORING IN DATABASE
@@ -83,7 +83,7 @@ public class AuthService
         // VERIFY PASSWORD
         if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
         {
-            throw new Exception("Invalid email or password");
+            throw new UnauthorizedAccessException("Invalid password");
         }
 
         // UPDATE LAST LOGIN TIME

@@ -97,9 +97,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowReactNative");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("AllowReactNative");
 app.MapControllers();
 
 app.Run();

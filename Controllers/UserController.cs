@@ -23,8 +23,9 @@ public class UserController : ControllerBase
     {
         try
         {
-            // VERIFY USER CHANGING PASSWORD
+            // VERIFY USER BEFORE PROFILE UPDATE
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
             if (currentUserId != userId.ToString())
             {
                 return Forbid();
@@ -33,9 +34,21 @@ public class UserController : ControllerBase
             var updatedProfile = await _userService.UpdateUserProfile(userId, updateDto);
             return Ok(updatedProfile);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            // 401 ERROR
+            Console.WriteLine($"USER UPDATE ERROR: {ex.Message}"); // Debugging log
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            // 404 ERROR
+            return NotFound(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            // Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -45,7 +58,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            // Optional: Verify that the current user is accessing their own profile
+            // VERIFY USER BEFORE GETTING PROFILE
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (currentUserId != userId.ToString())
             {
