@@ -31,6 +31,8 @@ public class LocationService
             Latitude = locationDto.Latitude,
             Longitude = locationDto.Longitude,
             Address = locationDto.Address,
+            Contact = locationDto.Contact,
+            District = locationDto.District,
             UserId = UserId,
             User = user,
             IsActive = true,
@@ -48,6 +50,8 @@ public class LocationService
             Latitude = location.Latitude,
             Longitude = location.Longitude,
             Address = location.Address,
+            Contact = locationDto.Contact,
+            District = locationDto.District,
             UserId = location.UserId,
             CreatedAt = location.CreatedAt,
             UserFullName = user.First_name + " " + user.Last_name,
@@ -55,31 +59,79 @@ public class LocationService
     }
 
     // GET ALL LOCATIONS CREATED BY USERS
-    public async Task<List<LocationResponseDto>> GetLocations(
-        LocationFilterType filter)
+    public async Task<List<LocationResponseDto>> GetVerifiedLocations()
+    {
+        var query = _context.Locations
+            .Include(x => x.User)
+            .Where(x => x.IsVerified && x.IsActive);
+
+        return await query
+            .Select(l => new LocationResponseDto
+            {
+                Id = l.Id,
+                Name = l.Name,
+                Description = l.Description,
+                Latitude = l.Latitude,
+                Longitude = l.Longitude,
+                Address = l.Address,
+                Contact = l.Contact,
+                District = l.District,
+                IsActive = l.IsActive,
+                IsVerified = l.IsVerified,
+                UserId = l.UserId,
+                UserFullName = l.User.First_name + " " + l.User.Last_name,
+                CreatedAt = l.CreatedAt
+            })
+            .ToListAsync();
+    }
+
+    // GET ALL LOCATIONS CREATED BY A USER
+    public async Task<List<LocationResponseDto>> GetUserLocations(Guid UserId)
+    {
+        var query = _context.Locations
+            .Include(x => x.User)
+            .Where(x => x.UserId == UserId);
+
+        return await query
+            .Select(l => new LocationResponseDto
+            {
+                Id = l.Id,
+                Name = l.Name,
+                Description = l.Description,
+                Latitude = l.Latitude,
+                Longitude = l.Longitude,
+                Address = l.Address,
+                Contact = l.Contact,
+                District = l.District,
+                IsActive = l.IsActive,
+                IsVerified = l.IsVerified,
+                UserId = l.UserId,
+                UserFullName = l.User.First_name + " " + l.User.Last_name,
+                CreatedAt = l.CreatedAt
+            })
+            .ToListAsync();
+    }
+
+    // GENERAL LOCATION FILTERING FRO ADMINS
+    public async Task<List<LocationResponseDto>> GetLocations(LocationFilterType filter)
     {
         var query = _context.Locations
             .Include(x => x.User)
             .AsQueryable();
 
-        switch (filter.UserRole.ToLower())
+        // Admin-specific filtering
+        if (filter.UserRole?.ToLower() == "admin")
         {
-            case "Admin":
-                if (filter.UserId.HasValue)
-                {
-                    query = query.Where(x => x.UserId == filter.UserId.Value);
-                }
-                break;
-
-            case "User":
-                query = query.Where(x =>
-                    (filter.UserId.HasValue && x.UserId == filter.UserId.Value) || x.IsVerified);
-                break;
-
-            default:
-                query = query.Where(x =>
-                    x.IsVerified && x.IsActive);
-                break;
+            if (filter.UserId.HasValue)
+            {
+                query = query.Where(x => x.UserId == filter.UserId.Value);
+            }
+            // Otherwise, admin can see all locations
+        }
+        else
+        {
+            // Default filter for non-admin cases
+            query = query.Where(x => x.IsVerified && x.IsActive);
         }
 
         // Additional specific filtering
@@ -102,6 +154,8 @@ public class LocationService
                 Latitude = l.Latitude,
                 Longitude = l.Longitude,
                 Address = l.Address,
+                Contact = l.Contact,
+                District = l.District,
                 IsActive = l.IsActive,
                 IsVerified = l.IsVerified,
                 UserId = l.UserId,
@@ -109,16 +163,6 @@ public class LocationService
                 CreatedAt = l.CreatedAt
             })
             .ToListAsync();
-    }
-
-    // GET ALL LOCATIONS CREATED BY A USER
-    public async Task<List<LocationResponseDto>> GetUserLocations(Guid userId)
-    {
-        return await GetLocations(new LocationFilterType
-        {
-            UserId = userId,
-            UserRole = "User"
-        });
     }
 
     // GET ALL LOCATIONS BY ADMIN
@@ -171,6 +215,8 @@ public class LocationService
             Latitude = location.Latitude,
             Longitude = location.Longitude,
             Address = location.Address,
+            Contact = location.Contact,
+            District = location.District,
             IsActive = location.IsActive,
             IsVerified = true,
             UserId = location.UserId,
@@ -203,24 +249,33 @@ public class LocationService
     }
 
     // TO UPDATE A LOCATION BY USER
-    public async Task<LocationResponseDto> UpdateLocation(Guid userId, Guid locationId, LocationCreateDto locationDto)
+    public async Task<LocationResponseDto> UpdateLocation(Guid UserId, Guid locationId, UpdateLocationDto updateDto)
     {
         var location = await _context.Locations
-            .Where(l => l.Id == locationId && l.UserId == userId && !l.IsVerified)
+            .Include(l => l.User)
+            .Where(l => l.Id == locationId && l.UserId == UserId && !l.IsVerified)
             .FirstOrDefaultAsync();
 
-        if (location == null)
+        if (location is null)
         {
             throw new Exception("Location not found, unauthorized");
         }
 
-        location.Name = locationDto.Name;
-        location.Description = locationDto.Description;
-        location.Address = locationDto.Address;
-        location.Latitude = locationDto.Latitude;
-        location.Longitude = locationDto.Longitude;
-        location.IsVerified = false;
+        if (!string.IsNullOrWhiteSpace(updateDto.Name))
+            location.Name = updateDto.Name;
 
+        if (!string.IsNullOrWhiteSpace(updateDto.Description))
+            location.Description = updateDto.Description;
+        if (!string.IsNullOrWhiteSpace(updateDto.Contact))
+            location.Contact = updateDto.Contact;
+        if (!string.IsNullOrWhiteSpace(updateDto.District))
+            location.District = updateDto.District;
+        if (!string.IsNullOrWhiteSpace(updateDto.Address))
+            location.Address = updateDto.Address;
+
+        // RUN LOCATION UPDATE BY USER
+        _context.Locations.Update(location);
+        // UPDATE CHANGES TO THE DATABASE
         await _context.SaveChangesAsync();
 
         return new LocationResponseDto
@@ -231,6 +286,8 @@ public class LocationService
             Latitude = location.Latitude,
             Longitude = location.Longitude,
             Address = location.Address,
+            Contact = location.Contact,
+            District = location.District,
             IsActive = location.IsActive,
             IsVerified = false,
             UserId = location.UserId,

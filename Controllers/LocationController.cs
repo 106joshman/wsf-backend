@@ -1,6 +1,10 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WSFBackendApi.Data;
 using WSFBackendApi.DTOs;
+using WSFBackendApi.Models;
 using WSFBackendApi.Services;
 
 namespace WSFBackendApi.Controllers;
@@ -18,53 +22,126 @@ public class LocationController : ControllerBase
         _context = context;
     }
 
-    // CREATE LOCATION
-    [HttpPost]
-    public async Task<IActionResult> CreateLocation(Guid UserId, [FromBody] LocationCreateDto locationDto)
+    // CREATE LOCATION ENDPOINT
+    [HttpPost("{userId}")]
+    [Authorize]
+    public async Task<IActionResult> CreateLocation(Guid userId, [FromBody] LocationCreateDto locationDto)
     {
         try
         {
-            var response = await _locationService.CreateLocation(UserId, locationDto);
+            // VERIFY USER TOKEN BEFORE LOCATION IS CREATED
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (currentUserId != userId.ToString())
+            {
+                return Forbid();
+            }
+
+            var response = await _locationService.CreateLocation(userId, locationDto);
             return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            // 401 ERROR
+            Console.WriteLine($"THIS IS A 401 ERROR: {ex.Message}"); // Debugging log
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            // 404 ERROR
+            return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
+            return BadRequest(new { message = ex.Message });
         }
     }
 
-    // GET LOCATION BASED ON FILTER OF AVAILABLE USER OR NOT
-    [HttpGet]
-    public async Task<IActionResult> GetLocations([FromQuery] LocationFilterType filter)
-    {
-        try
-        {
-            var response = await _locationService.GetLocations(filter);
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
+    // // CREATE LOCATION
+    // [HttpPost("{userId}")]
+    // [Authorize]
+    // public async Task<IActionResult> CreateLocation(Guid userId, [FromBody] LocationCreateDto locationDto)
+    // {
+    //     try
+    //     {
+    //         // Check if the user is authenticated at all
+    //         Console.WriteLine($"IsAuthenticated: {User.Identity?.IsAuthenticated}");
 
-    // GET LOCATIOPN BY ID
+    //         // Print all claims for debugging
+    //         foreach (var claim in User.Claims)
+    //         {
+    //             Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+    //         }
+
+    //         // VERIFY USER BEFORE CREATE LOCATION
+    //         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //         Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
+    //         if (currentUserId != userId.ToString())
+    //         {
+    //             return Forbid();
+    //         }
+    //         var response = await _locationService.CreateLocation(userId, locationDto);
+    //         return Ok(response);
+    //     }
+    //     catch (UnauthorizedAccessException ex)
+    //     {
+    //         // 401 ERROR
+    //         Console.WriteLine($"USER UPDATE ERROR: {ex.Message}"); // Debugging log
+    //         return Unauthorized(new { message = ex.Message });
+    //     }
+    //     catch (KeyNotFoundException ex)
+    //     {
+    //         // 404 ERROR
+    //         return NotFound(new { message = ex.Message });
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
+    //         return BadRequest(new { message = ex.Message });
+    //     }
+    // }
+
+    // // GET LOCATION BASED ON FILTER OF AVAILABLE USER OR NOT
+    // [HttpGet]
+    // public async Task<IActionResult> GetLocations([FromQuery] LocationFilterType filter)
+    // {
+    //     try
+    //     {
+    //         var response = await _locationService.GetLocations(filter);
+    //         return Ok(response);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         return BadRequest(ex.Message);
+    //     }
+    // }
+
+    // // GET LOCATION BY ID BY ADMIN
     [HttpGet("{locationId}")]
     public async Task<IActionResult> GetLocationById(Guid locationId)
     {
         try
         {
-            var filter = new LocationFilterType
-            {
-                UserId = null,
-                UserRole = "Admin"
-            };
-
             // TO GET LOCATION WITH SPECIFIC ID
-            var locations = await _locationService.GetLocations(filter);
-
-            // FIND THE SPECIFIC LOCATION
-            var location = locations.FirstOrDefault(l => l.Id == locationId);
+            var location = await _context.Locations
+                .Include(x => x.User)
+                .Where(l => l.Id == locationId)
+                .Select(l => new LocationResponseDto
+                {
+                    Id = l.Id,
+                    Name = l.Name,
+                    Description = l.Description,
+                    Latitude = l.Latitude,
+                    Longitude = l.Longitude,
+                    Address = l.Address,
+                    Contact = l.Contact,
+                    District = l.District,
+                    UserId = l.UserId,
+                    CreatedAt = l.CreatedAt,
+                    UserFullName = l.User.First_name + " " + l.User.Last_name,
+                })
+                .FirstOrDefaultAsync();
 
             if (location == null)
             {
@@ -79,13 +156,94 @@ public class LocationController : ControllerBase
         }
     }
 
-    // UPDATE LOCATION BY CREATOR ONLY IF LOCATION IS UNVERIFIED BY ADMIN
-    [HttpPut("{locationId}")]
-    public async Task<IActionResult> UpdateLocation(Guid userId, Guid locationId, [FromBody] LocationCreateDto locationDto)
+    [HttpGet("all")]
+    public async Task<IActionResult> GetVerifiedLocations()
     {
         try
         {
-            var updatedLocation = await _locationService.UpdateLocation(userId, locationId, locationDto);
+            var response = await _locationService.GetVerifiedLocations();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("user/{userId}")]
+    [Authorize]
+    public async Task<IActionResult> GetUserLocations(Guid userId)
+    {
+        try
+        {
+            // Print all claims for debugging
+            foreach (var claim in User.Claims)
+            {
+                Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+            }
+
+            // VERIFY USER BEFORE YOU GET USER LOCATION
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
+            if (currentUserId != userId.ToString())
+            {
+                return Forbid();
+            }
+
+            // Log the received userId for debugging
+        Console.WriteLine($"Received request for user locations with userId: {userId}");
+
+        // Validate the userId format
+        if (userId == Guid.Empty)
+        {
+            return BadRequest("Invalid user ID format");
+        }
+
+            var response = await _locationService.GetUserLocations(userId);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetUserLocations: {ex.Message}");
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("admin")]
+    public async Task<IActionResult> GetLocationsByAdmin([FromQuery] LocationFilterType filter)
+    {
+        try
+        {
+            // Validate the admin role before proceeding
+            if (filter.UserRole?.ToLower() != "Admin")
+            {
+                return Unauthorized("Admin access required");
+            }
+            var response = await _locationService.GetLocations(filter);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    // UPDATE LOCATION BY CREATOR ONLY IF LOCATION IS UNVERIFIED BY ADMIN
+    [HttpPut("{userId}/{locationId}")]
+    [Authorize]
+    public async Task<IActionResult> UpdateLocation(Guid userId, Guid locationId, [FromBody] UpdateLocationDto updateDto)
+    {
+        try
+        {
+            // VERIFY USER BEFORE YOU GET USER LOCATION
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
+            if (currentUserId != userId.ToString())
+            {
+                return Forbid();
+            }
+
+            var updatedLocation = await _locationService.UpdateLocation(userId, locationId, updateDto);
             return Ok(updatedLocation);
         }
         catch (Exception ex)
@@ -95,7 +253,8 @@ public class LocationController : ControllerBase
     }
 
     // DELETE LOCATION ONLY BY ADMIN
-    [HttpDelete("{locationId}")]
+    [HttpDelete("{adminId}/{locationId}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteLocation(Guid adminId, Guid locationId)
     {
         try

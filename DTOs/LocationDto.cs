@@ -4,6 +4,8 @@ public class LocationCreateDto
 {
     public required string Name { get; set; }
     public required string Description { get; set; }
+    public required string Contact { get; set; }
+    public required string District { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public required string Address { get; set; }
@@ -14,6 +16,8 @@ public class LocationResponseDto
     public Guid Id { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
+    public required string Contact { get; set; }
+    public required string District { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public required string Address { get; set; }
@@ -30,4 +34,13 @@ public class LocationFilterType
     public bool? IsVerified { get; set; }
     public bool? IsActive { get; set; }
     public string UserRole { get; set; } = "User";
+}
+
+public class UpdateLocationDto
+{
+    public  string? Name { get; set; }
+    public  string? Description { get; set; }
+    public  string? Contact { get; set; }
+    public  string? District { get; set; }
+    public  string? Address { get; set; }
 }

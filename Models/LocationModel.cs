@@ -16,6 +16,11 @@ public class Location
     public required string Description { get; set; }
 
     [Required]
+
+    [StringLength(4)]
+    public required string District { get; set; }
+
+    [Required]
     public double Latitude { get; set; }
 
     [Required]
@@ -27,6 +32,9 @@ public class Location
 
     [StringLength(200)]
     public required string Address { get; set; }
+
+    [Required]
+    public required string Contact { get; set; }
 
     // FOREIGN KEY FOR USER
     public Guid UserId { get; set; }

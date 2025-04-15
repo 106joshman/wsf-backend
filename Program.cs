@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using WSFBackendApi.Data;
 using WSFBackendApi.Services;
 
@@ -14,7 +15,40 @@ string jwtKey = EnsureJwtKey(builder.Configuration);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Your normal Swagger config
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+    // Add the JWT security scheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    // Apply the scheme globally to all operations
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2", // doesn't affect functionality much
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
+});
 
 // INCLUDE DATABASE CONTEXT SERVICE
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(
@@ -22,9 +56,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(
     ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
 ));
 
-// AUTHENTICATION SERVICE REGISTRATION
+// REGISTER ALL SERVICE
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<LocationService>();
 
 // CONFIGURE JWT AUTHENTICATION
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -40,6 +75,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(5)
+        };
+
+        // Add debugging for token validation
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token successfully validated");
+                return Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -62,8 +112,8 @@ static string EnsureJwtKey(IConfiguration configuration)
         // jwtKey = Guid.NewGuid().ToString();
         jwtKey = GenerateSecureJwtKey();
 
-        // Console.WriteLine("Generated New JWT Key. Please update your appsettings.json");
-        // Console.WriteLine($"New JWT Key: {jwtKey}");
+        Console.WriteLine("Generated New JWT Key. Please update your appsettings.json");
+        Console.WriteLine($"New JWT Key: {jwtKey}");
         configuration["Jwt:Key"] = jwtKey;
     }
 
@@ -93,7 +143,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+});
 }
 
 app.UseHttpsRedirection();
