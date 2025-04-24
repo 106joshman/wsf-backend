@@ -59,13 +59,17 @@ public class LocationService
     }
 
     // GET ALL LOCATIONS CREATED BY USERS
-    public async Task<List<LocationResponseDto>> GetVerifiedLocations()
+    public async Task<PaginatedResponse<LocationResponseDto>> GetVerifiedLocations(PaginationParams paginationParams)
     {
         var query = _context.Locations
             .Include(x => x.User)
             .Where(x => x.IsVerified && x.IsActive);
 
-        return await query
+        var totalCount = await query.CountAsync();
+
+        var locationList = await query
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
             .Select(l => new LocationResponseDto
             {
                 Id = l.Id,
@@ -83,6 +87,17 @@ public class LocationService
                 CreatedAt = l.CreatedAt
             })
             .ToListAsync();
+
+        var paginatedResult = new PaginatedResponse<LocationResponseDto>
+        {
+            Items = locationList,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)paginationParams.PageSize)
+        };
+
+        return paginatedResult;
     }
 
     // GET ALL LOCATIONS CREATED BY A USER
@@ -263,7 +278,6 @@ public class LocationService
 
         if (!string.IsNullOrWhiteSpace(updateDto.Name))
             location.Name = updateDto.Name;
-
         if (!string.IsNullOrWhiteSpace(updateDto.Description))
             location.Description = updateDto.Description;
         if (!string.IsNullOrWhiteSpace(updateDto.Contact))

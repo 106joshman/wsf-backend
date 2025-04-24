@@ -58,65 +58,6 @@ public class LocationController : ControllerBase
         }
     }
 
-    // // CREATE LOCATION
-    // [HttpPost("{userId}")]
-    // [Authorize]
-    // public async Task<IActionResult> CreateLocation(Guid userId, [FromBody] LocationCreateDto locationDto)
-    // {
-    //     try
-    //     {
-    //         // Check if the user is authenticated at all
-    //         Console.WriteLine($"IsAuthenticated: {User.Identity?.IsAuthenticated}");
-
-    //         // Print all claims for debugging
-    //         foreach (var claim in User.Claims)
-    //         {
-    //             Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
-    //         }
-
-    //         // VERIFY USER BEFORE CREATE LOCATION
-    //         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //         Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
-    //         if (currentUserId != userId.ToString())
-    //         {
-    //             return Forbid();
-    //         }
-    //         var response = await _locationService.CreateLocation(userId, locationDto);
-    //         return Ok(response);
-    //     }
-    //     catch (UnauthorizedAccessException ex)
-    //     {
-    //         // 401 ERROR
-    //         Console.WriteLine($"USER UPDATE ERROR: {ex.Message}"); // Debugging log
-    //         return Unauthorized(new { message = ex.Message });
-    //     }
-    //     catch (KeyNotFoundException ex)
-    //     {
-    //         // 404 ERROR
-    //         return NotFound(new { message = ex.Message });
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
-    //         return BadRequest(new { message = ex.Message });
-    //     }
-    // }
-
-    // // GET LOCATION BASED ON FILTER OF AVAILABLE USER OR NOT
-    // [HttpGet]
-    // public async Task<IActionResult> GetLocations([FromQuery] LocationFilterType filter)
-    // {
-    //     try
-    //     {
-    //         var response = await _locationService.GetLocations(filter);
-    //         return Ok(response);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return BadRequest(ex.Message);
-    //     }
-    // }
-
     // // GET LOCATION BY ID BY ADMIN
     [HttpGet("{locationId}")]
     public async Task<IActionResult> GetLocationById(Guid locationId)
@@ -156,12 +97,13 @@ public class LocationController : ControllerBase
         }
     }
 
+    // GET ALL LOCATIONS THAT HAS BEEN VERIFIED
     [HttpGet("all")]
-    public async Task<IActionResult> GetVerifiedLocations()
+    public async Task<IActionResult> GetVerifiedLocations([FromQuery] PaginationParams paginationParams)
     {
         try
         {
-            var response = await _locationService.GetVerifiedLocations();
+            var response = await _locationService.GetVerifiedLocations(paginationParams);
             return Ok(response);
         }
         catch (Exception ex)
@@ -172,7 +114,7 @@ public class LocationController : ControllerBase
 
     [HttpGet("user/{userId}")]
     [Authorize]
-    public async Task<IActionResult> GetUserLocations(Guid userId)
+    public async Task<IActionResult> GetUserLocations(Guid userId, [FromQuery] PaginationParams paginationParams)
     {
         try
         {
