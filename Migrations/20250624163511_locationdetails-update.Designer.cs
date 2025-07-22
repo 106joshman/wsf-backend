@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WSFBackendApi.Data;
 
@@ -11,9 +12,11 @@ using WSFBackendApi.Data;
 namespace WSFBackendApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250624163511_locationdetails-update")]
+    partial class locationdetailsupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,8 +42,7 @@ namespace WSFBackendApi.Migrations
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -63,8 +65,7 @@ namespace WSFBackendApi.Migrations
 
                     b.Property<string>("LGA")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("longtext");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("double");
@@ -79,8 +80,7 @@ namespace WSFBackendApi.Migrations
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");

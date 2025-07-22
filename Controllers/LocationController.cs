@@ -58,7 +58,7 @@ public class LocationController : ControllerBase
         }
     }
 
-    // // GET LOCATION BY ID BY ADMIN
+    // // GET LOCATION BY ID BY ADMIN/SUPER_ADMIN/USER/GUEST
     [HttpGet("{locationId}")]
     public async Task<IActionResult> GetLocationById(Guid locationId)
     {
@@ -78,6 +78,9 @@ public class LocationController : ControllerBase
                     Address = l.Address,
                     Contact = l.Contact,
                     District = l.District,
+                    State =l.State,
+                    Country =l.Country,
+                    LGA =l.LGA,
                     UserId = l.UserId,
                     CreatedAt = l.CreatedAt,
                     UserFullName = l.User.First_name + " " + l.User.Last_name,
@@ -112,9 +115,10 @@ public class LocationController : ControllerBase
         }
     }
 
+    // GET ALL LOCATIONS BY USER ID
     [HttpGet("user/{userId}")]
     [Authorize]
-    public async Task<IActionResult> GetUserLocations(Guid userId, [FromQuery] PaginationParams paginationParams)
+    public async Task<IActionResult> GetUserLocations(Guid userId)
     {
         try
         {
@@ -126,14 +130,14 @@ public class LocationController : ControllerBase
 
             // VERIFY USER BEFORE YOU GET USER LOCATION
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
+            // Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
             if (currentUserId != userId.ToString())
             {
                 return Forbid();
             }
 
             // Log the received userId for debugging
-        Console.WriteLine($"Received request for user locations with userId: {userId}");
+        // Console.WriteLine($"Received request for user locations with userId: {userId}");
 
         // Validate the userId format
         if (userId == Guid.Empty)
@@ -151,22 +155,60 @@ public class LocationController : ControllerBase
         }
     }
 
+    // GET ALL LOCATIONS BY ADMIN ROLE
     [HttpGet("admin")]
-    public async Task<IActionResult> GetLocationsByAdmin([FromQuery] LocationFilterType filter)
+    [Authorize(Roles = "Admin,super_admin")]
+    public async Task<IActionResult> GetLocationsByAdmin([FromQuery] LocationFilterType filter, [FromQuery] PaginationParams pagination)
     {
         try
         {
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
             // Validate the admin role before proceeding
-            if (filter.UserRole?.ToLower() != "Admin")
+            var allowedRoles = new[] { "Admin", "super_admin"};
+            if (string.IsNullOrEmpty(currentUserRole) || !allowedRoles.Contains(currentUserRole, StringComparer.OrdinalIgnoreCase))
             {
                 return Unauthorized("Admin access required");
             }
-            var response = await _locationService.GetLocations(filter);
+            // SET USER ROLE IN THE FILTER FOR SERVICE PROCESSING
+            filter.UserRole = currentUserRole;
+
+            var response = await _locationService.GetLocations(filter,pagination);
             return Ok(response);
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
+        }
+    }
+
+    // LOCATION VERIFICATION ENPOINT BY ADMIN
+    [HttpPut("verify/{adminId}/{locationId}")]
+    [Authorize(Roles = "Admin,super_admin")]
+    public async Task<IActionResult> VerifyLocation(Guid adminId, Guid locationId)
+    {
+        try
+        {
+            // VERIFY SPECIFIC ADMIN ROLE AND TOKEN BEFOR VERIFICATION
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (currentUserId != adminId.ToString())
+            {
+                return Forbid("Token user ID does not match admin ID");
+            }
+
+            if (!new[] { "Admin", "super_admin" }.Contains(currentUserRole, StringComparer.OrdinalIgnoreCase))
+            {
+                return Unauthorized("Admin access required for location verification");
+            }
+
+            var response = await _locationService.VerifyLocation(adminId, locationId);
+            return Ok(new { message = "Location verified successfully", });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Verification error: {ex.Message}");
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -196,19 +238,26 @@ public class LocationController : ControllerBase
 
     // DELETE LOCATION ONLY BY ADMIN
     [HttpDelete("{adminId}/{locationId}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,super_admin")]
     public async Task<IActionResult> DeleteLocation(Guid adminId, Guid locationId)
     {
         try
         {
+            var tokenAdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+var tokenRole = User.FindFirstValue(ClaimTypes.Role);
+Console.WriteLine($"Token UserId: {tokenAdminId}, Role: {tokenRole}");
+
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
+                Console.WriteLine($"Current user role: {currentUserRole}");
+
             // VERIFY ADMIN AND DELETE LOCATION
             await _locationService.DeleteLocation(adminId, locationId);
             return Ok("Location deleted successfully");
         }
         catch (Exception ex)
         {
-
-            return BadRequest(ex.Message);
+             Console.WriteLine($"CHECK THIS ERROR: {ex.Message}");
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

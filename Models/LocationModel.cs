@@ -17,7 +17,7 @@ public class Location
 
     [Required]
 
-    [StringLength(4)]
+    [StringLength(15)]
     public required string District { get; set; }
 
     [Required]
@@ -35,6 +35,21 @@ public class Location
 
     [Required]
     public required string Contact { get; set; }
+
+    [Required]
+
+    [StringLength(100)]
+    public required string Country { get; set; }
+
+    [Required]
+
+    [StringLength(50)]
+    public required string State { get; set; }
+
+    [Required]
+
+    [StringLength(100)]
+    public required string LGA { get; set; }
 
     // FOREIGN KEY FOR USER
     public Guid UserId { get; set; }

@@ -17,6 +17,8 @@ public class UserProfileResponseDto
     public string? PhoneNumber { get; set; }
     public string? AvatarUrl { get; set; }
     public required string Role { get; set; }
+    public string? State { get; set; }
+    public string? AssignedCellId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLogin { get; set; }
 }

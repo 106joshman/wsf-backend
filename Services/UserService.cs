@@ -2,8 +2,10 @@ using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using WSFBackendApi.Data;
 using WSFBackendApi.DTOs;
+using WSFBackendApi.Models;
 
 namespace WSFBackendApi.Services;
+
 public class UserService
 {
     private readonly ApplicationDbContext _context;
@@ -86,25 +88,75 @@ public class UserService
     public async Task ChangePassword(Guid userId, ChangePasswordDto changePasswordDto)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id ==userId);
+            .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (user == null)
+        if (user == null)
+        {
+            throw new Exception("User not found");
+        }
+
+        if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.CurrentPassword, user.Password))
+        {
+            throw new Exception("Current password is incorrect!");
+        }
+
+        if (string.IsNullOrWhiteSpace(changePasswordDto.NewPassword) || changePasswordDto.NewPassword.Length < 8)
+        {
+            throw new Exception("New password must be at least 8 characters long!");
+        }
+
+        user.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<PaginatedResponse<UserProfileResponseDto>> GetAllAdmins(PaginationParams paginationParams, string? First_name = null, string? Last_name = null, string? email = null, string? state = null)
+    {
+        var query = _context.Users
+            .Where(u => u.Role == "Admin" || u.Role == "super_admin")
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(First_name))
+        {
+            query = query.Where(u => u.First_name.Contains(First_name));
+        }
+
+        if (!string.IsNullOrWhiteSpace(Last_name))
+        {
+            query = query.Where(u => u.Last_name.Contains(Last_name));
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            query = query.Where(u => u.Email.Contains(email));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var users = await query
+            .OrderBy(u => u.First_name)
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
+            .Select(u => new UserProfileResponseDto
             {
-                throw new Exception ("User not found");
-            }
+                Id = u.Id,
+                Email = u.Email,
+                First_name = u.First_name,
+                Last_name = u.Last_name,
+                PhoneNumber = u.PhoneNumber,
+                AvatarUrl = u.AvatarUrl,
+                Role = u.Role,
+                CreatedAt = u.CreatedAt,
+                LastLogin = u.LastLogin,
+            })
+            .ToListAsync();
 
-            if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.CurrentPassword, user.Password))
-            {
-                throw new Exception("Current password is incorrect!");
-            }
-
-            if (string.IsNullOrWhiteSpace(changePasswordDto.NewPassword) || changePasswordDto.NewPassword.Length < 8)
-            {
-                throw new Exception ("New password must be at least 8 characters long!");
-            }
-
-            user.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
-
-            await _context.SaveChangesAsync();
+        return new PaginatedResponse<UserProfileResponseDto>
+        {
+            Items = users,
+            TotalCount = totalCount,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize
+        };
     }
 }

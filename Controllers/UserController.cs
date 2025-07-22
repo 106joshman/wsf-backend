@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WSFBackendApi.DTOs;
+using WSFBackendApi.Models;
 using WSFBackendApi.Services;
 
 namespace WSFBackendApi.Controllers;
@@ -11,7 +12,7 @@ namespace WSFBackendApi.Controllers;
 public class UserController : ControllerBase
 {
     private readonly UserService _userService;
-    public UserController (UserService userService)
+    public UserController(UserService userService)
     {
         _userService = userService;
     }
@@ -88,13 +89,26 @@ public class UserController : ControllerBase
             }
 
             await _userService.ChangePassword(userId, changePasswordDto);
-            return Ok(new {message = "Password changed successfully"});
+            return Ok(new { message = "Password changed successfully" });
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Registration error: {ex.Message}");
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpGet("admins")]
+    public async Task<IActionResult> GetAllAdmins(
+        [FromQuery] PaginationParams pagination,
+        [FromQuery] string? First_name,
+        [FromQuery] string? Last_name,
+        [FromQuery] string? email,
+        [FromQuery] string? state
+    )
+    {
+        var result = await _userService.GetAllAdmins(pagination, First_name, Last_name, email, state);
+        return Ok(result);
     }
 
 }

@@ -33,6 +33,9 @@ public class LocationService
             Address = locationDto.Address,
             Contact = locationDto.Contact,
             District = locationDto.District,
+            State =locationDto.State,
+            Country =locationDto.Country,
+            LGA =locationDto.LGA,
             UserId = UserId,
             User = user,
             IsActive = true,
@@ -52,13 +55,16 @@ public class LocationService
             Address = location.Address,
             Contact = locationDto.Contact,
             District = locationDto.District,
+            State =locationDto.State,
+            Country =locationDto.Country,
+            LGA =locationDto.LGA,
             UserId = location.UserId,
             CreatedAt = location.CreatedAt,
             UserFullName = user.First_name + " " + user.Last_name,
         };
     }
 
-    // GET ALL LOCATIONS CREATED BY USERS
+    // GET ALL VERIFIED LOCATIONS CREATED BY USERS
     public async Task<PaginatedResponse<LocationResponseDto>> GetVerifiedLocations(PaginationParams paginationParams)
     {
         var query = _context.Locations
@@ -80,6 +86,9 @@ public class LocationService
                 Address = l.Address,
                 Contact = l.Contact,
                 District = l.District,
+                State =l.State,
+                Country =l.Country,
+                LGA =l.LGA,
                 IsActive = l.IsActive,
                 IsVerified = l.IsVerified,
                 UserId = l.UserId,
@@ -118,6 +127,9 @@ public class LocationService
                 Address = l.Address,
                 Contact = l.Contact,
                 District = l.District,
+                State =l.State,
+                Country =l.Country,
+                LGA =l.LGA,
                 IsActive = l.IsActive,
                 IsVerified = l.IsVerified,
                 UserId = l.UserId,
@@ -127,15 +139,18 @@ public class LocationService
             .ToListAsync();
     }
 
-    // GENERAL LOCATION FILTERING FRO ADMINS
-    public async Task<List<LocationResponseDto>> GetLocations(LocationFilterType filter)
+    // GENERAL LOCATION FILTERING FOR ADMINS
+    public async Task<PaginatedResponse<LocationResponseDto>> GetLocations(LocationFilterType filter, PaginationParams paginationParams)
     {
         var query = _context.Locations
             .Include(x => x.User)
             .AsQueryable();
 
+        // ROLE BASED FILTERING
+        var allowedRoles = new[] { "admin", "super_admin" };
+
         // Admin-specific filtering
-        if (filter.UserRole?.ToLower() == "admin")
+        if (filter.UserRole?.ToLower() == "super_admin" || filter.UserRole?.ToLower() == "admin")
         {
             if (filter.UserId.HasValue)
             {
@@ -160,7 +175,11 @@ public class LocationService
             query = query.Where(l => l.IsActive == filter.IsActive.Value);
         }
 
-        return await query
+        var totalCount = await query.CountAsync();
+
+        var locationList = await query
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
             .Select(l => new LocationResponseDto
             {
                 Id = l.Id,
@@ -171,6 +190,9 @@ public class LocationService
                 Address = l.Address,
                 Contact = l.Contact,
                 District = l.District,
+                State = l.State,
+                Country = l.Country,
+                LGA = l.LGA,
                 IsActive = l.IsActive,
                 IsVerified = l.IsVerified,
                 UserId = l.UserId,
@@ -178,33 +200,43 @@ public class LocationService
                 CreatedAt = l.CreatedAt
             })
             .ToListAsync();
+
+        return new PaginatedResponse<LocationResponseDto>
+        {
+            Items = locationList,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)paginationParams.PageSize)
+        };
+
     }
 
     // GET ALL LOCATIONS BY ADMIN
-    public async Task<List<LocationResponseDto>> GetLocationByAdmin(Guid adminId, bool? isVerified = null)
+    public async Task<PaginatedResponse<LocationResponseDto>> GetLocationByAdmin(Guid adminId, bool? isVerified = null)
     {
         // CHECK IF USER IS ADMIN
-        var admin = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == adminId && u.Role.ToLower() == "Admin");
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin"));
 
-        if (admin == null)
+        if (user == null)
         {
-            throw new Exception("Admin access required");
+            throw new Exception("Access denied: Admin access required");
         }
 
         return await GetLocations(new LocationFilterType
         {
             UserId = adminId,
-            UserRole = "Admin",
+            UserRole = user.Role,
             IsVerified = isVerified
-        });
+        }, new PaginationParams());
     }
 
     // ADMIN VERIFY A LOCATION
     public async Task<LocationResponseDto> VerifyLocation(Guid adminId, Guid locationId)
     {
         var admin = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == adminId && u.Role.ToLower() == "Admin");
+            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin"));
 
         if (admin == null)
         {
@@ -212,11 +244,17 @@ public class LocationService
         }
 
         var location = await _context.Locations
+            .Include(l => l.User)
             .FirstOrDefaultAsync(l => l.Id == locationId);
 
         if (location == null)
         {
             throw new Exception("Location not found");
+        }
+
+        if (location.IsVerified)
+        {
+            throw new Exception("Location is already verified.");
         }
 
         location.IsVerified = true;
@@ -232,6 +270,9 @@ public class LocationService
             Address = location.Address,
             Contact = location.Contact,
             District = location.District,
+            State =location.State,
+            Country =location.Country,
+            LGA =location.LGA,
             IsActive = location.IsActive,
             IsVerified = true,
             UserId = location.UserId,
@@ -244,7 +285,7 @@ public class LocationService
     public async Task DeleteLocation(Guid adminId, Guid locationId)
     {
         var admin = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == adminId && u.Role.ToLower() == "Admin");
+            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin"));
 
         if (admin == null)
         {
@@ -302,6 +343,9 @@ public class LocationService
             Address = location.Address,
             Contact = location.Contact,
             District = location.District,
+            State =location.State,
+            Country =location.Country,
+            LGA =location.LGA,
             IsActive = location.IsActive,
             IsVerified = false,
             UserId = location.UserId,

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -5,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using WSFBackendApi.Data;
+using WSFBackendApi.Seeders;
 using WSFBackendApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,6 +72,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidateIssuer = true,
+            RoleClaimType = ClaimTypes.Role,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidateAudience = true,
             ValidAudience = builder.Configuration["Jwt:Audience"],
@@ -96,11 +99,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // ADD CORS POLICY FOR REACT NATIVE
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactNative", builder =>
+    // options.AddPolicy("AllowReactNative", builder =>
+    // {
+    //     builder.AllowAnyOrigin()
+    //         .AllowAnyMethod()
+    //         .AllowAnyHeader();
+    // });
+
+    options.AddPolicy("AllowFrontendClients", builder =>
     {
-        builder.AllowAnyOrigin()
+        builder.SetIsOriginAllowed(origin =>
+            {
+                var uri = new Uri(origin);
+                return uri.Host == "localhost" ||
+                       uri.Host == "127.0.0.1" ||
+                       uri.Host.StartsWith("192.168.") ||
+                       uri.Host.StartsWith("10.") ||
+                       uri.Host.StartsWith("172.") ||
+                       uri.Host=="http://localhost:3000/";
+            })
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 
@@ -112,8 +132,8 @@ static string EnsureJwtKey(IConfiguration configuration)
         // jwtKey = Guid.NewGuid().ToString();
         jwtKey = GenerateSecureJwtKey();
 
-        Console.WriteLine("Generated New JWT Key. Please update your appsettings.json");
-        Console.WriteLine($"New JWT Key: {jwtKey}");
+        // Console.WriteLine("Generated New JWT Key. Please update your appsettings.json");
+        // Console.WriteLine($"New JWT Key: {jwtKey}");
         configuration["Jwt:Key"] = jwtKey;
     }
 
@@ -139,6 +159,9 @@ static string GenerateSecureJwtKey()
 
 var app = builder.Build();
 
+// SEED THE SUPER ADMIN USER TO DATABASE
+// await SuperAdminSeeder.SeedAsync(app.Services);
+
 // CONFIGURE THE HTTP REQUEST PIPELINE
 if (app.Environment.IsDevelopment())
 {
@@ -152,7 +175,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowReactNative");
+app.UseCors("AllowFrontendClients");
 app.MapControllers();
 
 app.Run();

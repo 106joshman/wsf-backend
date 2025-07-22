@@ -123,6 +123,7 @@ public class AuthService
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Name, $"{user.First_name} {user.Last_name}"),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
