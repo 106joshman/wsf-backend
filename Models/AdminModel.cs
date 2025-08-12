@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WSFBackendApi.Models;
 
-public class User
+[Table("admins")]
+public class AdminUser
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
@@ -25,19 +27,18 @@ public class User
 
     public string? AvatarUrl { get; set; }
 
-    public required string Role { get; set; } = "user";
+    public string? Country { get; set; }
+
+    public string? State { get; set; }
+
+    public string? Address { get; set; }
+
+    public required string Role { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; set; } = false;
 
     public DateTime? LastLogin { get; set; }
 
-    // NAVIGATION PROPERTY FOR LOCATIONS
-    public ICollection<Location>? Locations { get; set; }
-
-    internal static Guid FindFirst(string nameIdentifier)
-    {
-        throw new NotImplementedException();
-    }
 }

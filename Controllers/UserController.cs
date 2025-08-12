@@ -97,18 +97,4 @@ public class UserController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-
-    [HttpGet("admins")]
-    public async Task<IActionResult> GetAllAdmins(
-        [FromQuery] PaginationParams pagination,
-        [FromQuery] string? First_name,
-        [FromQuery] string? Last_name,
-        [FromQuery] string? email,
-        [FromQuery] string? state
-    )
-    {
-        var result = await _userService.GetAllAdmins(pagination, First_name, Last_name, email, state);
-        return Ok(result);
-    }
-
 }

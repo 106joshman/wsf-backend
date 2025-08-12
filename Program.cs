@@ -60,6 +60,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(
 
 // REGISTER ALL SERVICE
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AdminAuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<LocationService>();
 
@@ -161,6 +162,7 @@ var app = builder.Build();
 
 // SEED THE SUPER ADMIN USER TO DATABASE
 // await SuperAdminSeeder.SeedAsync(app.Services);
+// await MultipleAdminsSeeder.SeedAsync(app.Services);
 
 // CONFIGURE THE HTTP REQUEST PIPELINE
 if (app.Environment.IsDevelopment())

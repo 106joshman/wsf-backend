@@ -13,7 +13,7 @@ public static class SuperAdminSeeder
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         var superAdminEmail = "superadmin@wsf.com";
-        var exists = await context.Users.AnyAsync(u => u.Email == superAdminEmail);
+        var exists = await context.Admin.AnyAsync(u => u.Email == superAdminEmail);
 
         if (exists)
         {
@@ -25,7 +25,7 @@ public static class SuperAdminSeeder
 
         var passwordText = config["AdminSettings:superAdminPassword"];
 
-        var superAdmin = new User
+        var superAdmin = new AdminUser
         {
             Id = Guid.NewGuid(),
             Email = superAdminEmail,
@@ -39,7 +39,7 @@ public static class SuperAdminSeeder
             LastLogin = DateTime.UtcNow
         };
 
-        context.Users.Add(superAdmin);
+        context.Admin.Add(superAdmin);
         await context.SaveChangesAsync();
     }
 }

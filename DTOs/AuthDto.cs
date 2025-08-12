@@ -5,10 +5,10 @@ namespace WSFBackendApi.DTOs;
 public class RegisterDto
 {
     [Required]
-    public required string First_name {get; set;}
+    public required string First_name { get; set; }
 
     [Required]
-    public required string Last_name {get; set;}
+    public required string Last_name { get; set; }
 
     [Required]
     [EmailAddress]

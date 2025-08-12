@@ -5,7 +5,7 @@
 namespace WSFBackendApi.Migrations
 {
     /// <inheritdoc />
-    public partial class superAdminseedingfield : Migration
+    public partial class SuperAdminSeedingField : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

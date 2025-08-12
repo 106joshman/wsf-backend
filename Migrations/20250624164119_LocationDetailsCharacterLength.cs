@@ -5,7 +5,7 @@
 namespace WSFBackendApi.Migrations
 {
     /// <inheritdoc />
-    public partial class locationdetailscharacterlength : Migration
+    public partial class LocationDetailsCharacterLength : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

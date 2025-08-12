@@ -22,7 +22,7 @@ public class AuthService
 
     public async Task<AuthResponseDto> Register(RegisterDto registerDto)
     {
-        Console.WriteLine($"Received Login request for {registerDto.Email}");
+        // Console.WriteLine($"Received Login request for {registerDto.Email}");
         // VALIDATE EMAIL AND PASSWORD INPUT
         if (string.IsNullOrWhiteSpace(registerDto.Email) || string.IsNullOrWhiteSpace(registerDto.Password))
         {

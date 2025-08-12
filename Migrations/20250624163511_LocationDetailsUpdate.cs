@@ -5,7 +5,7 @@
 namespace WSFBackendApi.Migrations
 {
     /// <inheritdoc />
-    public partial class locationdetailsupdate : Migration
+    public partial class LocationDetailsUpdate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,42 +22,42 @@ namespace WSFBackendApi.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4")
                 .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AddColumn<string>(
-                name: "Country",
-                table: "Locations",
-                type: "longtext",
-                nullable: false)
-                .Annotation("MySql:CharSet", "utf8mb4");
+            // migrationBuilder.AddColumn<string>(
+            //     name: "Country",
+            //     table: "Locations",
+            //     type: "longtext",
+            //     nullable: false)
+            //     .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AddColumn<string>(
-                name: "LGA",
-                table: "Locations",
-                type: "longtext",
-                nullable: false)
-                .Annotation("MySql:CharSet", "utf8mb4");
+            // migrationBuilder.AddColumn<string>(
+            //     name: "LGA",
+            //     table: "Locations",
+            //     type: "longtext",
+            //     nullable: false)
+            //     .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AddColumn<string>(
-                name: "State",
-                table: "Locations",
-                type: "longtext",
-                nullable: false)
-                .Annotation("MySql:CharSet", "utf8mb4");
+            // migrationBuilder.AddColumn<string>(
+            //     name: "State",
+            //     table: "Locations",
+            //     type: "longtext",
+            //     nullable: false)
+            //     .Annotation("MySql:CharSet", "utf8mb4");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Country",
-                table: "Locations");
+            // migrationBuilder.DropColumn(
+            //     name: "Country",
+            //     table: "Locations");
 
-            migrationBuilder.DropColumn(
-                name: "LGA",
-                table: "Locations");
+            // migrationBuilder.DropColumn(
+            //     name: "LGA",
+            //     table: "Locations");
 
-            migrationBuilder.DropColumn(
-                name: "State",
-                table: "Locations");
+            // migrationBuilder.DropColumn(
+            //     name: "State",
+            //     table: "Locations");
 
             migrationBuilder.AlterColumn<string>(
                 name: "District",

@@ -110,11 +110,9 @@ public class UserService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<PaginatedResponse<UserProfileResponseDto>> GetAllAdmins(PaginationParams paginationParams, string? First_name = null, string? Last_name = null, string? email = null, string? state = null)
+    public async Task<PaginatedResponse<AdminViewResponseDto>> GetAllAdmins(PaginationParams paginationParams, string? First_name = null, string? Last_name = null, string? email = null, string? state = null)
     {
-        var query = _context.Users
-            .Where(u => u.Role == "Admin" || u.Role == "super_admin")
-            .AsQueryable();
+        var query = _context.Admin.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(First_name))
         {
@@ -131,13 +129,18 @@ public class UserService
             query = query.Where(u => u.Email.Contains(email));
         }
 
+        if (!string.IsNullOrWhiteSpace(state))
+        {
+            query = query.Where(u => u.State != null && u.State.Contains(state));
+        }
+
         var totalCount = await query.CountAsync();
 
         var users = await query
             .OrderBy(u => u.First_name)
             .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
             .Take(paginationParams.PageSize)
-            .Select(u => new UserProfileResponseDto
+            .Select(u => new AdminViewResponseDto
             {
                 Id = u.Id,
                 Email = u.Email,
@@ -145,18 +148,23 @@ public class UserService
                 Last_name = u.Last_name,
                 PhoneNumber = u.PhoneNumber,
                 AvatarUrl = u.AvatarUrl,
+                State = u.State, // Added missing State field
+                Country = u.Country, // Added missing Country field
+                Address = u.Address, // Added missing Address field
                 Role = u.Role,
                 CreatedAt = u.CreatedAt,
                 LastLogin = u.LastLogin,
+                IsActive = u.IsActive,
             })
             .ToListAsync();
 
-        return new PaginatedResponse<UserProfileResponseDto>
+        return new PaginatedResponse<AdminViewResponseDto>
         {
             Items = users,
             TotalCount = totalCount,
             PageNumber = paginationParams.PageNumber,
-            PageSize = paginationParams.PageSize
+            PageSize = paginationParams.PageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)paginationParams.PageSize)
         };
     }
 }

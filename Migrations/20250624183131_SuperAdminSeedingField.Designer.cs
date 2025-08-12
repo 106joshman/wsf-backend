@@ -12,8 +12,8 @@ using WSFBackendApi.Data;
 namespace WSFBackendApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250624183131_superAdmin-seeding-field")]
-    partial class superAdminseedingfield
+    [Migration("20250624183131_SuperAdminSeedingField")]
+    partial class SuperAdminSeedingField
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

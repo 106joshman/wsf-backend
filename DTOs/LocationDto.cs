@@ -39,7 +39,22 @@ public class LocationFilterType
     public Guid? UserId { get; set; }
     public bool? IsVerified { get; set; }
     public bool? IsActive { get; set; }
-    public string UserRole { get; set; } = "User";
+    public string? UserRole { get; set; }
+
+    // New filtering parameters
+    public string? District { get; set; }
+    public string? Address { get; set; }
+    public string? Country { get; set; }
+    public string? State { get; set; }
+    public string? LGA { get; set; }
+    public string? Name { get; set; }
+
+    // Date range filtering
+    public DateTime? CreatedFrom { get; set; }
+    public DateTime? CreatedTo { get; set; }
+
+    // General search term
+    public string? SearchTerm { get; set; }
 }
 
 public class UpdateLocationDto

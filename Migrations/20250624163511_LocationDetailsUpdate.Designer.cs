@@ -12,8 +12,8 @@ using WSFBackendApi.Data;
 namespace WSFBackendApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250624164119_locationdetails-character-length")]
-    partial class locationdetailscharacterlength
+    [Migration("20250624163511_LocationDetailsUpdate")]
+    partial class LocationDetailsUpdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,8 +42,7 @@ namespace WSFBackendApi.Migrations
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -66,8 +65,7 @@ namespace WSFBackendApi.Migrations
 
                     b.Property<string>("LGA")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("longtext");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("double");
@@ -82,8 +80,7 @@ namespace WSFBackendApi.Migrations
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");

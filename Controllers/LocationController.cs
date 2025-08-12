@@ -100,21 +100,6 @@ public class LocationController : ControllerBase
         }
     }
 
-    // GET ALL LOCATIONS THAT HAS BEEN VERIFIED
-    [HttpGet("all")]
-    public async Task<IActionResult> GetVerifiedLocations([FromQuery] PaginationParams paginationParams)
-    {
-        try
-        {
-            var response = await _locationService.GetVerifiedLocations(paginationParams);
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
-
     // GET ALL LOCATIONS BY USER ID
     [HttpGet("user/{userId}")]
     [Authorize]
@@ -155,17 +140,34 @@ public class LocationController : ControllerBase
         }
     }
 
+    // GET ALL LOCATIONS THAT HAS BEEN VERIFIED
+    [HttpGet("all")]
+    public async Task<IActionResult> GetVerifiedLocations([FromQuery] PaginationParams paginationParams)
+    {
+        try
+        {
+            var response = await _locationService.GetVerifiedLocations(paginationParams);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     // GET ALL LOCATIONS BY ADMIN ROLE
     [HttpGet("admin")]
-    [Authorize(Roles = "Admin,super_admin")]
+    [Authorize(Roles = "super_admin,Admin,state_admin,zonal_admin")]
     public async Task<IActionResult> GetLocationsByAdmin([FromQuery] LocationFilterType filter, [FromQuery] PaginationParams pagination)
     {
         try
         {
             var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             // Validate the admin role before proceeding
-            var allowedRoles = new[] { "Admin", "super_admin"};
-            if (string.IsNullOrEmpty(currentUserRole) || !allowedRoles.Contains(currentUserRole, StringComparer.OrdinalIgnoreCase))
+            var allowedRoles = new[] { "Admin", "super_admin", "state_admin", "zonal_admin"};
+            if (string.IsNullOrEmpty(currentUserId) || !allowedRoles.Contains(currentUserRole, StringComparer.OrdinalIgnoreCase))
             {
                 return Unauthorized("Admin access required");
             }
@@ -182,9 +184,9 @@ public class LocationController : ControllerBase
     }
 
     // LOCATION VERIFICATION ENPOINT BY ADMIN
-    [HttpPut("verify/{adminId}/{locationId}")]
-    [Authorize(Roles = "Admin,super_admin")]
-    public async Task<IActionResult> VerifyLocation(Guid adminId, Guid locationId)
+    [HttpPut("verify/{locationId}")]
+    [Authorize(Roles = "Admin,super_admin,state_admin,zonal_admin")]
+    public async Task<IActionResult> VerifyLocation(Guid locationId)
     {
         try
         {
@@ -192,18 +194,36 @@ public class LocationController : ControllerBase
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
 
-            if (currentUserId != adminId.ToString())
+            if (string.IsNullOrEmpty(currentUserId))
             {
-                return Forbid("Token user ID does not match admin ID");
+                return Unauthorized("user ID not found");
             }
 
-            if (!new[] { "Admin", "super_admin" }.Contains(currentUserRole, StringComparer.OrdinalIgnoreCase))
+            if (!new[] { "Admin", "super_admin", "state_admin", "zonal_admin" }.Contains(currentUserRole, StringComparer.OrdinalIgnoreCase))
             {
-                return Unauthorized("Admin access required for location verification");
+                return Unauthorized(new { message = "Admin access required for location verification" });
             }
 
-            var response = await _locationService.VerifyLocation(adminId, locationId);
-            return Ok(new { message = "Location verified successfully", });
+            if (!Guid.TryParse(currentUserId, out var adminId))
+            {
+                return BadRequest(new {message = "Invalid user ID"});
+            }
+
+            // Optional: Verify the admin exists in database (for extra security)
+            var adminExists = await _context.Admin.AnyAsync(u => u.Id == adminId &&
+                new[] { "Admin", "super_admin", "state_admin", "zonal_admin" }.Contains(u.Role.ToLower()));
+
+            if (!adminExists)
+            {
+                return Unauthorized(new {message="Admin user not found or invalid role"});
+            }
+
+            var response = await _locationService.VerifyLocation(locationId);
+            return Ok(new
+            {
+                message = "Location verified successfully",
+                // location = response
+            });
         }
         catch (Exception ex)
         {
@@ -237,22 +257,43 @@ public class LocationController : ControllerBase
     }
 
     // DELETE LOCATION ONLY BY ADMIN
-    [HttpDelete("{adminId}/{locationId}")]
-    [Authorize(Roles = "Admin,super_admin")]
-    public async Task<IActionResult> DeleteLocation(Guid adminId, Guid locationId)
+    [HttpDelete("{locationId}")]
+    [Authorize(Roles = "super_admin,Admin,state_admin,zonal_admin")]
+    public async Task<IActionResult> DeleteLocation(Guid locationId)
     {
         try
         {
-            var tokenAdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-var tokenRole = User.FindFirstValue(ClaimTypes.Role);
-Console.WriteLine($"Token UserId: {tokenAdminId}, Role: {tokenRole}");
+            var currentAdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentAdminRole = User.FindFirstValue(ClaimTypes.Role);
 
-            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
-                Console.WriteLine($"Current user role: {currentUserRole}");
+
+            if (string.IsNullOrEmpty(currentAdminId))
+            {
+                return Unauthorized("user ID not found");
+            }
+
+            if (!new[] { "Admin", "super_admin", "state_admin", "zonal_admin" }.Contains(currentAdminRole, StringComparer.OrdinalIgnoreCase))
+            {
+                return Unauthorized(new { message = "Admin access required for location verification" });
+            }
+
+            if (!Guid.TryParse(currentAdminId, out var adminId))
+            {
+                return BadRequest(new {message = "Invalid user ID"});
+            }
+
+            // Optional: Verify the admin exists in database (for extra security)
+            var adminExists = await _context.Admin.AnyAsync(u => u.Id == adminId &&
+                new[] { "Admin", "super_admin", "state_admin", "zonal_admin" }.Contains(u.Role.ToLower()));
+
+            if (!adminExists)
+            {
+                return Unauthorized(new {message="Admin user not found or invalid role"});
+            }
 
             // VERIFY ADMIN AND DELETE LOCATION
-            await _locationService.DeleteLocation(adminId, locationId);
-            return Ok("Location deleted successfully");
+            await _locationService.DeleteLocation(locationId);
+            return Ok(new { message = "Location deleted successfully" });
         }
         catch (Exception ex)
         {

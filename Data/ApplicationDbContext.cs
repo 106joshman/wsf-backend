@@ -12,6 +12,7 @@ namespace WSFBackendApi.Data
 
         // PREDEFINED DATABASE TABLES STRUCTURE
         public DbSet<User> Users { get; set; }
+        public DbSet<AdminUser> Admin { get; set; }
         public DbSet<Location> Locations { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

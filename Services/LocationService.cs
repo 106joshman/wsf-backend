@@ -97,7 +97,7 @@ public class LocationService
             })
             .ToListAsync();
 
-        var paginatedResult = new PaginatedResponse<LocationResponseDto>
+        return new PaginatedResponse<LocationResponseDto>
         {
             Items = locationList,
             PageNumber = paginationParams.PageNumber,
@@ -105,8 +105,6 @@ public class LocationService
             TotalCount = totalCount,
             TotalPages = (int)Math.Ceiling(totalCount / (double)paginationParams.PageSize)
         };
-
-        return paginatedResult;
     }
 
     // GET ALL LOCATIONS CREATED BY A USER
@@ -147,10 +145,10 @@ public class LocationService
             .AsQueryable();
 
         // ROLE BASED FILTERING
-        var allowedRoles = new[] { "admin", "super_admin" };
+        var allowedRoles = new[] { "super_admin", "Admin", "state_admin", "zonal_admin" };
 
         // Admin-specific filtering
-        if (filter.UserRole?.ToLower() == "super_admin" || filter.UserRole?.ToLower() == "admin")
+        if (allowedRoles.Contains(filter.UserRole, StringComparer.OrdinalIgnoreCase))
         {
             if (filter.UserId.HasValue)
             {
@@ -160,7 +158,7 @@ public class LocationService
         }
         else
         {
-            // Default filter for non-admin cases
+            // NONE ADMIN ROLES USERS CAN ONLY SEE VERIFIED AND ACTIVE LOCATIONS
             query = query.Where(x => x.IsVerified && x.IsActive);
         }
 
@@ -173,6 +171,59 @@ public class LocationService
         if (filter.IsActive.HasValue)
         {
             query = query.Where(l => l.IsActive == filter.IsActive.Value);
+        }
+
+        // NEW LOCATION-SPECIFIC FILTERS
+        // if (!string.IsNullOrWhiteSpace(filter.District))
+        // {
+        //     query = query.Where(l => l.District.ToLower().Contains(filter.District.ToLower()));
+        // }
+
+        if (!string.IsNullOrWhiteSpace(filter.Country))
+        {
+            query = query.Where(l => l.Country.ToLower().Contains(filter.Country.ToLower()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.State))
+        {
+            query = query.Where(l => l.State.ToLower().Contains(filter.State.ToLower()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.LGA))
+        {
+            query = query.Where(l => l.LGA.ToLower().Contains(filter.LGA.ToLower()));
+        }
+
+        // if (!string.IsNullOrWhiteSpace(filter.Name))
+        // {
+        //     query = query.Where(l => l.Name.ToLower().Contains(filter.Name.ToLower()));
+        // }
+
+        // DATE RANGE FILTERING
+        if (filter.CreatedFrom.HasValue)
+        {
+            query = query.Where(l => l.CreatedAt >= filter.CreatedFrom.Value);
+        }
+
+        if (filter.CreatedTo.HasValue)
+        {
+            query = query.Where(l => l.CreatedAt <= filter.CreatedTo.Value);
+        }
+
+        // GENERAL SEARCH TERM (searches across multiple fields)
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+        {
+            var searchTerm = filter.SearchTerm.ToLower();
+            query = query.Where(l =>
+                l.Name.ToLower().Contains(searchTerm) ||
+                l.Description.ToLower().Contains(searchTerm) ||
+                l.Address.ToLower().Contains(searchTerm) ||
+                l.District.ToLower().Contains(searchTerm) ||
+                // l.State.ToLower().Contains(searchTerm) ||
+                // l.Country.ToLower().Contains(searchTerm) ||
+                // l.LGA.ToLower().Contains(searchTerm) ||
+                (l.User.First_name + " " + l.User.Last_name).ToLower().Contains(searchTerm)
+            );
         }
 
         var totalCount = await query.CountAsync();
@@ -226,22 +277,22 @@ public class LocationService
 
         return await GetLocations(new LocationFilterType
         {
-            UserId = adminId,
+            // UserId = adminId,
             UserRole = user.Role,
             IsVerified = isVerified
         }, new PaginationParams());
     }
 
     // ADMIN VERIFY A LOCATION
-    public async Task<LocationResponseDto> VerifyLocation(Guid adminId, Guid locationId)
+    public async Task<LocationResponseDto> VerifyLocation(Guid locationId)
     {
-        var admin = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin"));
+        // var admin = await _context.Users
+        //     .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "admin" || u.Role.ToLower() == "super_admin" || u.Role.ToLower() == "state_admin" || u.Role.ToLower() == "zonal_admin"));
 
-        if (admin == null)
-        {
-            throw new Exception("Unauthorized: Admin access required");
-        }
+        // if (admin == null)
+        // {
+        //     throw new Exception("Unauthorized: Admin access required");
+        // }
 
         var location = await _context.Locations
             .Include(l => l.User)
@@ -282,15 +333,15 @@ public class LocationService
     }
 
     // TO DELETE A LOCATION BY ADMIN
-    public async Task DeleteLocation(Guid adminId, Guid locationId)
+    public async Task DeleteLocation(Guid locationId)
     {
-        var admin = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin"));
+        // var admin = await _context.Users
+        //     .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin"));
 
-        if (admin == null)
-        {
-            throw new Exception("Unauthorized: Admin access required");
-        }
+        // if (admin == null)
+        // {
+        //     throw new Exception("Unauthorized: Admin access required");
+        // }
 
         var location = await _context.Locations
             .FirstOrDefaultAsync(l => l.Id == locationId);
