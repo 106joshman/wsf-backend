@@ -5,9 +5,9 @@ public class LocationCreateDto
     public required string Name { get; set; }
     public required string Description { get; set; }
     public required string Contact { get; set; }
-    public required string Country { get; set; }
-    public required string State { get; set; }
-    public required string LGA { get; set; }
+    public string? Country { get; set; }
+    public string? State { get; set; }
+    public string? LGA { get; set; }
     public required string Address { get; set; }
     public required string District { get; set; }
     public double Latitude { get; set; }
@@ -21,9 +21,9 @@ public class LocationResponseDto
     public required string Description { get; set; }
     public required string Contact { get; set; }
     public required string District { get; set; }
-    public required string Country { get; set; }
-    public required string State { get; set; }
-    public required string LGA { get; set; }
+    public string? Country { get; set; }
+    public string? State { get; set; }
+    public string? LGA { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public required string Address { get; set; }
