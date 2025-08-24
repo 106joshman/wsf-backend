@@ -15,8 +15,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 COPY --from=build /app ./
 
-# Expose port 5109(Render expects apps to listen here)
-EXPOSE 5109
+# Expose port 8080 (Render expects apps to listen here)
+EXPOSE 8080
 
 # Start the app
 ENTRYPOINT ["dotnet", "WSFBackendApi.dll"]
