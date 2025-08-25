@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using WSFBackendApi.Data;
-using WSFBackendApi.Seeders;
+// using WSFBackendApi.Seeders;
 using WSFBackendApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,10 +53,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // INCLUDE DATABASE CONTEXT SERVICE
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(
-    builder.Configuration.GetConnectionString("DefaultConnection"),
-    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
-));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(
+    builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 // REGISTER ALL SERVICE
 builder.Services.AddScoped<AuthService>();
