@@ -62,6 +62,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AdminAuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<LocationService>();
+builder.Services.AddScoped<OutlineService>();
 
 // CONFIGURE JWT AUTHENTICATION
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

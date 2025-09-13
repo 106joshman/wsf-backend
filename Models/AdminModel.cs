@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WSFBackendApi.Models;
 
-[Table("admins")]
 public class AdminUser
 {
     [Key]

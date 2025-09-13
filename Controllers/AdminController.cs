@@ -117,7 +117,7 @@ public class AdminController : ControllerBase
         }
 
         // VERIFY LOGGED IN USER TO BE SUPER ADMIN
-        var superAdmin = await _context.Admin.FirstOrDefaultAsync(x => x.Id == superAdminId && x.Role.ToLower() == "super_admin");
+        var superAdmin = await _context.Admins.FirstOrDefaultAsync(x => x.Id == superAdminId && x.Role.ToLower() == "super_admin");
 
         if (superAdmin == null)
         {
@@ -146,7 +146,7 @@ public class AdminController : ControllerBase
         }
 
         // Find admin to delete
-        var adminsToDelete = await _context.Admin
+        var adminsToDelete = await _context.Admins
             .Where(x => request.Ids.Contains(x.Id))
             .ToListAsync();
 
@@ -158,7 +158,7 @@ public class AdminController : ControllerBase
         var deletedIds = adminsToDelete.Select(x => x.Id).ToList();
         var notFoundIds = idsToDelete.Except(deletedIds).ToList();
 
-        _context.Admin.RemoveRange(adminsToDelete);
+        _context.Admins.RemoveRange(adminsToDelete);
         await _context.SaveChangesAsync();
 
         return Ok(new {

@@ -210,7 +210,7 @@ public class LocationController : ControllerBase
             }
 
             // Optional: Verify the admin exists in database (for extra security)
-            var adminExists = await _context.Admin.AnyAsync(u => u.Id == adminId &&
+            var adminExists = await _context.Admins.AnyAsync(u => u.Id == adminId &&
                 new[] { "Admin", "super_admin", "state_admin", "zonal_admin" }.Contains(u.Role.ToLower()));
 
             if (!adminExists)
@@ -283,7 +283,7 @@ public class LocationController : ControllerBase
             }
 
             // Optional: Verify the admin exists in database (for extra security)
-            var adminExists = await _context.Admin.AnyAsync(u => u.Id == adminId &&
+            var adminExists = await _context.Admins.AnyAsync(u => u.Id == adminId &&
                 new[] { "Admin", "super_admin", "state_admin", "zonal_admin" }.Contains(u.Role.ToLower()));
 
             if (!adminExists)

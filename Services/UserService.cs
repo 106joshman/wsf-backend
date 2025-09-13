@@ -112,7 +112,7 @@ public class UserService
 
     public async Task<PaginatedResponse<AdminViewResponseDto>> GetAllAdmins(PaginationParams paginationParams, string? First_name = null, string? Last_name = null, string? email = null, string? state = null)
     {
-        var query = _context.Admin.AsQueryable();
+        var query = _context.Admins.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(First_name))
         {

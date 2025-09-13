@@ -21,7 +21,7 @@ public class AdminAuthService
 
     public async Task<AdminCreateResponseDto> CreateAdmin(Guid superAdminId, AdminRegisterDto registerDto)
     {
-        var superAdmin = await _context.Admin.Where(a => a.Id == superAdminId && a.Role.ToLower() == "super_admin")
+        var superAdmin = await _context.Admins.Where(a => a.Id == superAdminId && a.Role.ToLower() == "super_admin")
         .FirstOrDefaultAsync();
 
         if (superAdmin == null)
@@ -29,7 +29,7 @@ public class AdminAuthService
             throw new UnauthorizedAccessException("Only super admin can create admins");
         }
 
-        if (await _context.Admin.AnyAsync(x => x.Email == registerDto.Email))
+        if (await _context.Admins.AnyAsync(x => x.Email == registerDto.Email))
         {
             throw new Exception("Email already exists");
         }
@@ -57,7 +57,7 @@ public class AdminAuthService
             Role = registerDto.Role,
         };
 
-        _context.Admin.Add(admin);
+        _context.Admins.Add(admin);
         await _context.SaveChangesAsync();
 
         var token = GenerateJwtToken(admin);
@@ -77,7 +77,7 @@ public class AdminAuthService
 
     public async Task<AdminLoginResponseDto> AdminLogin(LoginDto loginDto)
     {
-        var admin = await _context.Admin.FirstOrDefaultAsync(a => a.Email.ToLower() == loginDto.Email.ToLower()) ?? throw new Exception("Invalid email or password");
+        var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Email.ToLower() == loginDto.Email.ToLower()) ?? throw new Exception("Invalid email or password");
 
         // VERIFY PASSWORD
         if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, admin.Password))
@@ -118,7 +118,7 @@ public class AdminAuthService
     // New method to get admin details for viewing (no token)
     public async Task<AdminViewResponseDto> GetAdminById(Guid adminId)
     {
-        var admin = await _context.Admin.FirstOrDefaultAsync(a => a.Id == adminId)
+        var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Id == adminId)
             ?? throw new KeyNotFoundException("Admin not found");
 
         return new AdminViewResponseDto

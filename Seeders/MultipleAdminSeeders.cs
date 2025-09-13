@@ -19,7 +19,7 @@ namespace WSFBackendApi.Seeders
             var random = new Random();
 
             // Check if there are already 50 or more admins
-            var existingAdmins = await context.Admin
+            var existingAdmins = await context.Admins
                 .Where(u => roles.Contains(u.Role))
                 .CountAsync();
 
@@ -49,7 +49,7 @@ namespace WSFBackendApi.Seeders
                     LastLogin = null
                 };
 
-                context.Admin.Add(admin);
+                context.Admins.Add(admin);
             }
 
             await context.SaveChangesAsync();
