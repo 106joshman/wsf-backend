@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using WSFBackendApi.Data;
+using WSFBackendApi.Middleware;
+
 // using WSFBackendApi.Seeders;
 using WSFBackendApi.Services;
 
@@ -14,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 // JWT KEY GENERATION AND VALIDATION
 string jwtKey = EnsureJwtKey(builder.Configuration);
 
-// Add services to the container.
+// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -55,12 +57,31 @@ builder.Services.AddSwaggerGen(c =>
 // INCLUDE DATABASE CONTEXT SERVICE
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-        $"Host={Environment.GetEnvironmentVariable("POSTGRES_HOST")};" +
-        $"Port={Environment.GetEnvironmentVariable("POSTGRES_PORT")};" +
-        $"Database={Environment.GetEnvironmentVariable("POSTGRES_DB")};" +
-        $"Username={Environment.GetEnvironmentVariable("POSTGRES_USER")};" +
-        $"Password={Environment.GetEnvironmentVariable("POSTGRES_PASSWORD")};";
+    // Try to get connection from env vars (Render/Prod)
+    var host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
+    var port = Environment.GetEnvironmentVariable("POSTGRES_PORT");
+    var db = Environment.GetEnvironmentVariable("POSTGRES_DB");
+    var user = Environment.GetEnvironmentVariable("POSTGRES_USER");
+    var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+
+    string connectionString;
+
+    if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(db))
+    {
+        // Build connection string from environment variables
+        connectionString =
+            $"Host={host};" +
+            $"Port={port};" +
+            $"Database={db};" +
+            $"Username={user};" +
+            $"Password={password};" +
+            "Trust Server Certificate=true;";
+    }
+    else
+    {
+        // Fall back to local config (appsettings.json)
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    }
 
     options.UseNpgsql(connectionString);
 });
@@ -183,6 +204,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowFrontendClients");
