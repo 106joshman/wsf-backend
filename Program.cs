@@ -53,9 +53,17 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // INCLUDE DATABASE CONTEXT SERVICE
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(
-    builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+        $"Host={Environment.GetEnvironmentVariable("POSTGRES_HOST")};" +
+        $"Port={Environment.GetEnvironmentVariable("POSTGRES_PORT")};" +
+        $"Database={Environment.GetEnvironmentVariable("POSTGRES_DB")};" +
+        $"Username={Environment.GetEnvironmentVariable("POSTGRES_USER")};" +
+        $"Password={Environment.GetEnvironmentVariable("POSTGRES_PASSWORD")};";
+
+    options.UseNpgsql(connectionString);
+});
 
 // REGISTER ALL SERVICE
 builder.Services.AddScoped<AuthService>();
@@ -86,7 +94,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnTokenValidated = context =>
             {
-                Console.WriteLine("Token successfully validated");
+                // Console.WriteLine("Token successfully validated");
                 return Task.CompletedTask;
             },
             OnAuthenticationFailed = context =>
