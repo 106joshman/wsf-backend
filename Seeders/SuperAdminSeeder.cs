@@ -24,6 +24,11 @@ public static class SuperAdminSeeder
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
         var passwordText = config["AdminSettings:superAdminPassword"];
+        if (string.IsNullOrEmpty(passwordText))
+        {
+            Console.WriteLine("WARNING: AdminSettings:superAdminPassword not set. Skipping super admin creation.");
+            return;
+        }
 
         var superAdmin = new AdminUser
         {

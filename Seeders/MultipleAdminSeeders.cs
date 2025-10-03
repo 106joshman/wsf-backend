@@ -23,13 +23,13 @@ namespace WSFBackendApi.Seeders
                 .Where(u => roles.Contains(u.Role))
                 .CountAsync();
 
-            if (existingAdmins >= 50)
+            if (existingAdmins >= 10)
             {
                 Console.WriteLine("50 or more admin accounts already exist.");
                 return;
             }
 
-            var adminsToAdd = 50 - existingAdmins;
+            var adminsToAdd = 10 - existingAdmins;
             var passwordHash = BCrypt.Net.BCrypt.HashPassword("`080_Password,@1234`");
 
             for (int i = 0; i < adminsToAdd; i++)

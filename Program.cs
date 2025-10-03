@@ -54,6 +54,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// CONFIGURE POSTGRESQL DATABASE CONTEXT WITH ENTITY FRAMEWORK
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     string connectionString;
@@ -89,6 +90,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 "Trust Server Certificate=true;";
 
             Console.WriteLine($"Using DATABASE_URL with host: {uri.Host}");
+            Console.WriteLine($"Parsed - Host: {uri.Host}, Port: {uri.Port}, Database: {uri.AbsolutePath}");
         }
         catch (Exception ex)
         {
@@ -99,7 +101,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     else
     {
         // Fall back to local config (appsettings.json)
-        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("No database connection string found");
 
         if (string.IsNullOrEmpty(connectionString))
         {
@@ -229,8 +231,6 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine($"Migration failed: {ex.Message}");
-        Console.WriteLine($"Stack trace: {ex.StackTrace}");
-        // throw;
         // Don't throw in production - let app start even if migration fails
         // You can then fix and redeploy
     }
