@@ -63,47 +63,50 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
     if (!string.IsNullOrEmpty(databaseUrl))
     {
-        // Parse the DATABASE_URL format: postgresql://user:password@host:port/database
-        var uri = new Uri(databaseUrl);
-
-        connectionString =
-            $"Host={uri.Host};" +
-            $"Port={uri.Port};" +
-            $"Database={uri.AbsolutePath.TrimStart('/')};" +
-            $"Username={uri.UserInfo.Split(':')[0]};" +
-            $"Password={uri.UserInfo.Split(':')[1]};" +
-            "SSL Mode=Require;" +
-            "Trust Server Certificate=true;";
-
-          // DEBUG: Log the parsed values
-        Console.WriteLine($"Parsed - Host: {uri.Host}, Port: {uri.Port}, Database: {uri.AbsolutePath}");
-    }
-    else
-    {
-        // Try individual environment variables
-        var host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
-        var port = Environment.GetEnvironmentVariable("POSTGRES_PORT");
-        var db = Environment.GetEnvironmentVariable("POSTGRES_DB");
-        var user = Environment.GetEnvironmentVariable("POSTGRES_USER");
-        var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-
-        if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(db))
+        try
         {
+            // Parse the DATABASE_URL format: postgresql://user:password@host:port/database
+            var uri = new Uri(databaseUrl);
+
+            // Extract username and password safely
+            var userInfo = uri.UserInfo.Split(':');
+            var username = userInfo.Length > 0 ? userInfo[0] : "";
+            var password = userInfo.Length > 1 ? userInfo[1] : "";
+
+            // Extract database name (remove leading slash)
+            var database = uri.AbsolutePath.TrimStart('/');
+
+            // Use default port 5432 if not specified
+            var port = uri.Port > 0 ? uri.Port : 5432;
+
             connectionString =
-                $"Host={host};" +
-                $"Port={port ?? "5432"};" +
-                $"Database={db};" +
-                $"Username={user};" +
+                $"Host={uri.Host};" +
+                $"Port={port};" +
+                $"Database={database};" +
+                $"Username={username};" +
                 $"Password={password};" +
                 "SSL Mode=Require;" +
                 "Trust Server Certificate=true;";
+
+            Console.WriteLine($"Using DATABASE_URL with host: {uri.Host}");
         }
-        else
+        catch (Exception ex)
         {
-            // Fall back to local config (appsettings.json)
-            connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("No database connection string found");
+            Console.WriteLine($"Error parsing DATABASE_URL: {ex.Message}");
+            throw;
         }
+    }
+    else
+    {
+        // Fall back to local config (appsettings.json)
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("No database connection string found. Please set DATABASE_URL or configure DefaultConnection.");
+        }
+
+        Console.WriteLine("Using local connection string from appsettings.json");
     }
 
     options.UseNpgsql(connectionString);
@@ -226,6 +229,8 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine($"Migration failed: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        // throw;
         // Don't throw in production - let app start even if migration fails
         // You can then fix and redeploy
     }
