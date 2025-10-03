@@ -158,7 +158,7 @@ public class AdminAuthService
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
+            expires: DateTime.UtcNow.AddDays(3), // EXPRES IN 3 DAYS
             signingCredentials: creds
         );
 

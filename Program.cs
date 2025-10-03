@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Models;
 using WSFBackendApi.Data;
 using WSFBackendApi.Middleware;
 
-// using WSFBackendApi.Seeders;
+using WSFBackendApi.Seeders;
 using WSFBackendApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,33 +54,53 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// INCLUDE DATABASE CONTEXT SERVICE
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    // Try to get connection from env vars (Render/Prod)
-    var host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
-    var port = Environment.GetEnvironmentVariable("POSTGRES_PORT");
-    var db = Environment.GetEnvironmentVariable("POSTGRES_DB");
-    var user = Environment.GetEnvironmentVariable("POSTGRES_USER");
-    var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-
     string connectionString;
 
-    if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(db))
+    // First, try to get the full DATABASE_URL (Render's default)
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+    if (!string.IsNullOrEmpty(databaseUrl))
     {
-        // Build connection string from environment variables
+        // Parse the DATABASE_URL format: postgresql://user:password@host:port/database
+        var uri = new Uri(databaseUrl);
+
         connectionString =
-            $"Host={host};" +
-            $"Port={port};" +
-            $"Database={db};" +
-            $"Username={user};" +
-            $"Password={password};" +
+            $"Host={uri.Host};" +
+            $"Port={uri.Port};" +
+            $"Database={uri.AbsolutePath.TrimStart('/')};" +
+            $"Username={uri.UserInfo.Split(':')[0]};" +
+            $"Password={uri.UserInfo.Split(':')[1]};" +
+            "SSL Mode=Require;" +
             "Trust Server Certificate=true;";
     }
     else
     {
-        // Fall back to local config (appsettings.json)
-        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        // Try individual environment variables
+        var host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
+        var port = Environment.GetEnvironmentVariable("POSTGRES_PORT");
+        var db = Environment.GetEnvironmentVariable("POSTGRES_DB");
+        var user = Environment.GetEnvironmentVariable("POSTGRES_USER");
+        var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+
+        if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(db))
+        {
+            connectionString =
+                $"Host={host};" +
+                $"Port={port ?? "5432"};" +
+                $"Database={db};" +
+                $"Username={user};" +
+                $"Password={password};" +
+                "SSL Mode=Require;" +
+                "Trust Server Certificate=true;";
+        }
+        else
+        {
+            // Fall back to local config (appsettings.json)
+            connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("No database connection string found");
+        }
     }
 
     options.UseNpgsql(connectionString);
@@ -107,7 +127,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = builder.Configuration["Jwt:Audience"],
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(5)
+            ClockSkew = TimeSpan.FromMinutes(5) // ALLOW 5 MINUTES CLOCK SKEW AFTER TOKEN EXPIRES
         };
 
         // Add debugging for token validation
@@ -189,9 +209,28 @@ static string GenerateSecureJwtKey()
 
 var app = builder.Build();
 
+// Auto-apply migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    try
+    {
+        Console.WriteLine("Checking and applying database migrations...");
+        dbContext.Database.Migrate();
+        Console.WriteLine("Database is up to date!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration failed: {ex.Message}");
+        // Don't throw in production - let app start even if migration fails
+        // You can then fix and redeploy
+    }
+}
+
 // SEED THE SUPER ADMIN USER TO DATABASE
-// await SuperAdminSeeder.SeedAsync(app.Services);
-// await MultipleAdminsSeeder.SeedAsync(app.Services);
+await SuperAdminSeeder.SeedAsync(app.Services);
+await MultipleAdminsSeeder.SeedAsync(app.Services);
 
 // CONFIGURE THE HTTP REQUEST PIPELINE
 if (app.Environment.IsDevelopment())
