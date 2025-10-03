@@ -66,10 +66,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         // Parse the DATABASE_URL format: postgresql://user:password@host:port/database
         var uri = new Uri(databaseUrl);
 
-        // DEBUG: Log the parsed values
-        Console.WriteLine($"Parsed - Host: {uri.Host}, Port: {uri.Port}, Database: {uri.AbsolutePath}");
-
-
         connectionString =
             $"Host={uri.Host};" +
             $"Port={uri.Port};" +
@@ -78,6 +74,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             $"Password={uri.UserInfo.Split(':')[1]};" +
             "SSL Mode=Require;" +
             "Trust Server Certificate=true;";
+
+          // DEBUG: Log the parsed values
+        Console.WriteLine($"Parsed - Host: {uri.Host}, Port: {uri.Port}, Database: {uri.AbsolutePath}");
     }
     else
     {
