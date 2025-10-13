@@ -31,19 +31,30 @@ public class LocationController : ControllerBase
         {
             // VERIFY USER TOKEN BEFORE LOCATION IS CREATED
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
 
-            if (currentUserId != userId.ToString())
+            if (string.IsNullOrEmpty(currentUserId) || string.IsNullOrEmpty(currentUserRole))
             {
-                return Forbid();
+                return Unauthorized(new { message = "Invalid or missing user credentials" });
             }
 
+            // ✅ Allow only specific roles to create locations
+            var allowedRoles = new[] {UserRoles.HomeCellLeader};
+
+            if (!allowedRoles.Contains(currentUserRole))
+                return Forbid("You do not have permission to create a location.");
+
+            // ✅ Prevent users from creating locations for other users
+            if (currentUserId != userId.ToString())
+                return Forbid("You cannot create a location for another user.");
+
             var response = await _locationService.CreateLocation(userId, locationDto);
-            return Ok(response);
+            return Ok(new { message = "Location created successfully", data = response });
         }
         catch (UnauthorizedAccessException ex)
         {
             // 401 ERROR
-            Console.WriteLine($"THIS IS A 401 ERROR: {ex.Message}"); // Debugging log
+            // Console.WriteLine($"THIS IS A 401 ERROR: {ex.Message}"); // Debugging log
             return Unauthorized(new { message = ex.Message });
         }
         catch (KeyNotFoundException ex)
@@ -118,7 +129,7 @@ public class LocationController : ControllerBase
             // Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
             if (currentUserId != userId.ToString())
             {
-                return Forbid();
+                return Forbid("You do not have the clearance for this location!");
             }
 
             // Log the received userId for debugging
@@ -244,7 +255,7 @@ public class LocationController : ControllerBase
             Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
             if (currentUserId != userId.ToString())
             {
-                return Forbid();
+                return Forbid("You cannot update a location for another user.");
             }
 
             var updatedLocation = await _locationService.UpdateLocation(userId, locationId, updateDto);

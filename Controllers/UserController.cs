@@ -26,10 +26,10 @@ public class UserController : ControllerBase
         {
             // VERIFY USER BEFORE PROFILE UPDATE
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
+            // Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
             if (currentUserId != userId.ToString())
             {
-                return Forbid();
+                return Forbid("You cannot update another user details.");
             }
 
             var updatedProfile = await _userService.UpdateUserProfile(userId, updateDto);
@@ -63,7 +63,7 @@ public class UserController : ControllerBase
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (currentUserId != userId.ToString())
             {
-                return Forbid();
+                return Forbid("FRAUD!!! You cannot profile for another user.");
             }
 
             var profile = await _userService.GetUserProfile(userId);
@@ -85,7 +85,7 @@ public class UserController : ControllerBase
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (currentUserId != userId.ToString())
             {
-                return Forbid();
+                return Forbid("CALL THE POLICE NOW!!! You cannot change password for another user.");
             }
 
             await _userService.ChangePassword(userId, changePasswordDto);

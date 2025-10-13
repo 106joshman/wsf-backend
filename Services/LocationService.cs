@@ -33,9 +33,9 @@ public class LocationService
             Address = locationDto.Address,
             Contact = locationDto.Contact,
             District = locationDto.District,
-            State = locationDto.State,
-            Country = locationDto.Country,
-            LGA = locationDto.LGA,
+            State = locationDto.State ?? "",
+            Country = locationDto.Country ?? "",
+            LGA = locationDto.LGA ?? "",
             UserId = UserId,
             User = user,
             IsActive = true,
@@ -69,7 +69,8 @@ public class LocationService
     {
         var query = _context.Locations
             .Include(x => x.User)
-            .Where(x => x.IsVerified && x.IsActive);
+            .Where(x => x.IsVerified && x.IsActive)
+            .OrderByDescending(x => x.CreatedAt);
 
         var totalCount = await query.CountAsync();
 
