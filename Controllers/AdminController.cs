@@ -30,7 +30,7 @@ public class AdminController : ControllerBase
         try
         {
             var response = await _adminAuthService.AdminLogin(loginDto);
-            Console.WriteLine($"Login successful for : {response}");
+        //    Console.WriteLine($"Login successful for : {response}");
 
             return Ok(response);
         }
@@ -99,7 +99,7 @@ public class AdminController : ControllerBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Admin Registration error: {ex.Message}"); // Debugging log
+        //    Console.WriteLine($"Admin Registration error: {ex.Message}"); // Debugging log
             return BadRequest(new { message = ex.Message });
         }
     }

@@ -36,7 +36,7 @@ public class AuthService
         }
 
         // HASH PASSWORD BEFORE STORING IN DATABASE
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password, workFactor: 10);
 
         // CREATE USER OBJECT BEFOR SENDING TO DATABASE
         var user = new User
@@ -72,28 +72,30 @@ public class AuthService
 
     public async Task<AuthResponseDto> Login(LoginDto loginDto)
     {
-        Console.WriteLine($"Received Login request for {loginDto.Email}");
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == loginDto.Email.ToLower());
+        // Console.WriteLine($"Received Login request for {loginDto.Email}");
+        var user = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Email.ToLower() == loginDto.Email.ToLower());
 
-        if (user == null)
+         // CHECK FOR VALID EMAIL AND VERIFY PASSWORD
+        if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
         {
-            Console.WriteLine("User not found");
+            // Console.WriteLine("User not found");
             throw new Exception("Invalid email or password");
         }
-        // VERIFY PASSWORD
-        if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
-        {
-            throw new UnauthorizedAccessException("Invalid password");
-        }
 
-        // UPDATE LAST LOGIN TIME
-        user.LastLogin = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        _ = Task.Run(async () =>
+        {
+            // UPDATE LAST LOGIN TIME
+            user.LastLogin = DateTime.UtcNow;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        });
 
         // GENERATE JWT TOKEN
         var token = GenerateJwtToken(user);
 
-        Console.WriteLine("Login successful");
+        // Console.WriteLine("Login successful");
 
         return new AuthResponseDto
         {
@@ -140,7 +142,7 @@ public class AuthService
             expires: DateTime.UtcNow.AddDays(3), // EXPRES IN 3 DAYS
             signingCredentials: creds
         );
-        Console.WriteLine($"The token: {token}");
+    //    Console.WriteLine($"The token: {token}");
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

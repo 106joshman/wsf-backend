@@ -64,7 +64,7 @@ public class LocationController : ControllerBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
+        //    Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -121,7 +121,7 @@ public class LocationController : ControllerBase
             // Print all claims for debugging
             foreach (var claim in User.Claims)
             {
-                Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+            //    Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
             }
 
             // VERIFY USER BEFORE YOU GET USER LOCATION
@@ -146,7 +146,7 @@ public class LocationController : ControllerBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error in GetUserLocations: {ex.Message}");
+        //    Console.WriteLine($"Error in GetUserLocations: {ex.Message}");
             return BadRequest(ex.Message);
         }
     }
@@ -238,7 +238,7 @@ public class LocationController : ControllerBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Verification error: {ex.Message}");
+        //    Console.WriteLine($"Verification error: {ex.Message}");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -252,7 +252,7 @@ public class LocationController : ControllerBase
         {
             // VERIFY USER BEFORE YOU GET USER LOCATION
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
+        //    Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
             if (currentUserId != userId.ToString())
             {
                 return Forbid("You cannot update a location for another user.");
@@ -308,7 +308,7 @@ public class LocationController : ControllerBase
         }
         catch (Exception ex)
         {
-             Console.WriteLine($"CHECK THIS ERROR: {ex.Message}");
+         //    Console.WriteLine($"CHECK THIS ERROR: {ex.Message}");
             return BadRequest(new { message = ex.Message });
         }
     }

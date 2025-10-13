@@ -103,7 +103,7 @@ public class OutlineController : ControllerBase
     //     }
     //     catch (Exception ex)
     //     {
-    //         Console.WriteLine($"Error: {ex.Message}");
+    //     //    Console.WriteLine($"Error: {ex.Message}");
     //         return StatusCode(500, new { message = "An error occurred while fetching schedules." });
     //     }
     // }

@@ -25,7 +25,7 @@ namespace WSFBackendApi.Seeders
 
             if (existingAdmins >= 10)
             {
-                Console.WriteLine("50 or more admin accounts already exist.");
+            //    Console.WriteLine("50 or more admin accounts already exist.");
                 return;
             }
 
@@ -53,7 +53,7 @@ namespace WSFBackendApi.Seeders
             }
 
             await context.SaveChangesAsync();
-            Console.WriteLine($"{adminsToAdd} admin accounts seeded successfully.");
+        //    Console.WriteLine($"{adminsToAdd} admin accounts seeded successfully.");
         }
     }
 }

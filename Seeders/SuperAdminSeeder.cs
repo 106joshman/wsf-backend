@@ -17,7 +17,7 @@ public static class SuperAdminSeeder
 
         if (exists)
         {
-            Console.WriteLine("Super admin already exists");
+        //    Console.WriteLine("Super admin already exists");
             return;
         }
 
@@ -26,7 +26,7 @@ public static class SuperAdminSeeder
         var passwordText = config["AdminSettings:superAdminPassword"];
         if (string.IsNullOrEmpty(passwordText))
         {
-            Console.WriteLine("WARNING: AdminSettings:superAdminPassword not set. Skipping super admin creation.");
+        //    Console.WriteLine("WARNING: AdminSettings:superAdminPassword not set. Skipping super admin creation.");
             return;
         }
 

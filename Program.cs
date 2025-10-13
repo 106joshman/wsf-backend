@@ -89,12 +89,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 "SSL Mode=Require;" +
                 "Trust Server Certificate=true;";
 
-            Console.WriteLine($"Using DATABASE_URL with host: {uri.Host}");
-            Console.WriteLine($"Parsed - Host: {uri.Host}, Port: {uri.Port}, Database: {uri.AbsolutePath}");
+        //    Console.WriteLine($"Using DATABASE_URL with host: {uri.Host}");
+        //    Console.WriteLine($"Parsed - Host: {uri.Host}, Port: {uri.Port}, Database: {uri.AbsolutePath}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error parsing DATABASE_URL: {ex.Message}");
+           Console.WriteLine($"Error parsing DATABASE_URL: {ex.Message}");
             throw;
         }
     }
@@ -108,7 +108,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             throw new InvalidOperationException("No database connection string found. Please set DATABASE_URL or configure DefaultConnection.");
         }
 
-        Console.WriteLine("Using local connection string from appsettings.json");
+    //    Console.WriteLine("Using local connection string from appsettings.json");
     }
 
     options.UseNpgsql(connectionString);
@@ -148,7 +148,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             },
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+            //    Console.WriteLine($"Authentication failed: {context.Exception.Message}");
                 return Task.CompletedTask;
             }
         };
@@ -197,7 +197,7 @@ static string EnsureJwtKey(IConfiguration configuration)
 
     if (jwtKey.Length < 32)
     {
-        Console.WriteLine("JWT Key must be at least 32 characters long.");
+    //    Console.WriteLine("JWT Key must be at least 32 characters long.");
         Environment.Exit(1);
     }
     return jwtKey;
@@ -224,13 +224,13 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        Console.WriteLine("Checking and applying database migrations...");
+    //    Console.WriteLine("Checking and applying database migrations...");
         dbContext.Database.Migrate();
-        Console.WriteLine("Database is up to date!");
+    //    Console.WriteLine("Database is up to date!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Migration failed: {ex.Message}");
+       Console.WriteLine($"Migration failed: {ex.Message}");
         // Don't throw in production - let app start even if migration fails
         // You can then fix and redeploy
     }

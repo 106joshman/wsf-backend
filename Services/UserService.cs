@@ -18,7 +18,7 @@ public class UserService
     public async Task<UserProfileResponseDto> UpdateUserProfile(Guid userId, UserUpdateDto updateDto)
     {
         // FIND USER IN DATABASE
-        Console.WriteLine($"Received update request for {updateDto.First_name}");
+    //    Console.WriteLine($"Received update request for {updateDto.First_name}");
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == userId);
 
@@ -105,7 +105,7 @@ public class UserService
             throw new Exception("New password must be at least 8 characters long!");
         }
 
-        user.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+        user.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword, workFactor: 8);
 
         await _context.SaveChangesAsync();
     }

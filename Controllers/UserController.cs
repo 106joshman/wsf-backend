@@ -38,7 +38,7 @@ public class UserController : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             // 401 ERROR
-            Console.WriteLine($"USER UPDATE ERROR: {ex.Message}"); // Debugging log
+        //    Console.WriteLine($"USER UPDATE ERROR: {ex.Message}"); // Debugging log
             return Unauthorized(new { message = ex.Message });
         }
         catch (KeyNotFoundException ex)
@@ -93,11 +93,13 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Registration error: {ex.Message}");
+        //    Console.WriteLine($"Registration error: {ex.Message}");
             return BadRequest(ex.Message);
         }
     }
 
+    [HttpPost("all-users")]
+    [Authorize]
     public async Task<IActionResult> GetAllUsers(
         [FromQuery] PaginationParams pagination,
         [FromQuery] string? First_name,

@@ -41,7 +41,7 @@ public class AdminAuthService
             throw new Exception("Invalid admin role specified.");
         }
 
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password, workFactor: 10);
 
         // CREATE ADMIN OBJECT BEFORE SENDING TO DATABASE
         var admin = new AdminUser
@@ -89,9 +89,13 @@ public class AdminAuthService
         bool wasInactive = !admin.IsActive;
         admin.IsActive = true;
 
-        // UPDATE LAST LOGIN TIME
-        admin.LastLogin = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        _ = Task.Run(async () =>
+        {
+            // UPDATE LAST LOGIN TIME
+            admin.LastLogin = DateTime.UtcNow;
+            _context.Admins.Update(admin);
+            await _context.SaveChangesAsync();
+        });
 
         // GENERATE JWT TOKEN
         var token = GenerateJwtToken(admin);
