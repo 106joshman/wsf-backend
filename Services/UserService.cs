@@ -167,4 +167,53 @@ public class UserService
             TotalPages = (int)Math.Ceiling(totalCount / (double)paginationParams.PageSize)
         };
     }
+
+    public async Task<PaginatedResponse<UserProfileResponseDto>> GetAllUsers(PaginationParams paginationParams, string? First_name = null, string? Last_name = null, string? email = null)
+    {
+        var query = _context.Users.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(First_name))
+        {
+            query = query.Where(u => u.First_name.Contains(First_name));
+        }
+
+        if (!string.IsNullOrWhiteSpace(Last_name))
+        {
+            query = query.Where(u => u.Last_name.Contains(Last_name));
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            query = query.Where(u => u.Email.Contains(email));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var users = await query
+            .OrderBy(u => u.First_name)
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
+            .Select(u => new UserProfileResponseDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                First_name = u.First_name,
+                Last_name = u.Last_name,
+                PhoneNumber = u.PhoneNumber,
+                AvatarUrl = u.AvatarUrl,
+                Role = u.Role,
+                CreatedAt = u.CreatedAt,
+                LastLogin = u.LastLogin
+            })
+            .ToListAsync();
+
+        return new PaginatedResponse<UserProfileResponseDto>
+        {
+            Items = users,
+            TotalCount = totalCount,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)paginationParams.PageSize)
+        };
+    }
 }

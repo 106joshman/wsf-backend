@@ -97,4 +97,23 @@ public class UserController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    public async Task<IActionResult> GetAllUsers(
+        [FromQuery] PaginationParams pagination,
+        [FromQuery] string? First_name,
+        [FromQuery] string? Last_name,
+        [FromQuery] string? email
+    )
+    {
+        try
+        {
+            var response = await _userService.GetAllUsers(pagination, First_name, Last_name, email);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching users: {ex.Message}");
+            return StatusCode(500, new { message = "An error occurred while fetching users." });
+        }
+    }
 }

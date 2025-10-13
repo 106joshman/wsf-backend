@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace WSFBackendApi.Models;
 
 // ---------------- TEACHING ----------------
+[Index(nameof(Month), IsUnique = true)]
 public class Teaching
 {
     [Key]
@@ -18,7 +20,7 @@ public class Teaching
 
     public string Introduction { get; set; } = string.Empty;
 
-      // Audit fields
+    // Audit fields
     public Guid AdminId { get; set; }
 
     public string? AdminName { get; set; }
@@ -93,7 +95,7 @@ public class PrayerPoint
     public Guid PrayerOutlineId { get; set; }
 
     public PrayerOutline? PrayerOutline { get; set; }
-    
+
     public string Title { get; set; } = string.Empty;
 
     public string Scripture { get; set; } = string.Empty;

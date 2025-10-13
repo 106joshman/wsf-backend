@@ -1,7 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace WSFBackendApi.Models;
 
+[Index(nameof(Name), IsUnique = true)]
+[Index(nameof(District))]
+[Index(nameof(IsVerified), nameof(IsActive))]
 public class Location
 {
     [Key]

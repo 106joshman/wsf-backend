@@ -1,7 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace WSFBackendApi.Models;
 
+[Index(nameof(Email), IsUnique = true)]
+[Index(nameof(Role))]
 public class User
 {
     [Key]
