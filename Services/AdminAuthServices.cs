@@ -94,7 +94,7 @@ public class AdminAuthService
         admin.LastLogin = DateTime.UtcNow;
         _context.Admins.Attach(admin);
         _context.Entry(admin).State = EntityState.Modified;
-        
+
         await _context.SaveChangesAsync();
 
 
@@ -108,13 +108,13 @@ public class AdminAuthService
             Last_name = admin.Last_name,
             Email = admin.Email,
             Role = admin.Role,
-            CreatedAt = admin.CreatedAt,
-            PhoneNumber = admin.PhoneNumber,
-            AvatarUrl = admin.AvatarUrl,
-            State = admin.State,
-            Country = admin.Country,
-            Address = admin.Address,
-            LastLogin = admin.LastLogin,
+            // CreatedAt = admin.CreatedAt,
+            // PhoneNumber = admin.PhoneNumber,
+            // AvatarUrl = admin.AvatarUrl,
+            // State = admin.State,
+            // Country = admin.Country,
+            // Address = admin.Address,
+            // LastLogin = admin.LastLogin,
             Token = token,
             IsActive = admin.IsActive
         };
