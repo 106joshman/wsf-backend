@@ -27,15 +27,24 @@ public class UserController : ControllerBase
             // VERIFY USER BEFORE PROFILE UPDATE
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var currentUserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User";
-            // Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
-            if (string.IsNullOrEmpty(currentUserId) || (currentUserId != userId.ToString()))
+
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized("Invalid user session.");
+
+            // REGULAR USERS CAN ONLY UPDATE THEIR OWN PROFILE
+            bool isAdmin = currentUserRole is "Admin" or "super_admin" or "state_admin" or "zonal_admin";
+            if (!isAdmin && currentUserId != userId.ToString())
             {
                 return Forbid("You cannot update another user details.");
             }
 
             var updatedProfile = await _userService.UpdateUserProfile(userId, updateDto, currentUserRole);
 
-            return Ok(updatedProfile);
+            return Ok(new
+                {
+                    message = "Profile updated successfully",
+                    data = updatedProfile
+                });
         }
         catch (UnauthorizedAccessException ex)
         {

@@ -20,12 +20,7 @@ public class UserService
         // FIND USER IN DATABASE
     //    Console.WriteLine($"Received update request for {updateDto.First_name}");
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-        {
-            throw new KeyNotFoundException("User not found");
-        }
+            .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
 
         // Update fields if they are not null in the DTO
         if (!string.IsNullOrWhiteSpace(updateDto.First_name))
@@ -44,7 +39,7 @@ public class UserService
         {
             if (currentUserRole is "Admin" or "super_admin" or "state_admin" or "zonal_admin")
             {
-                var allowedRoles = new[] { "home_cell_leader", "User", "user" };
+                var allowedRoles = new[] { "home_cell_leader", "User" };
                 if (!allowedRoles.Contains(updateDto.Role))
                 {
                     throw new UnauthorizedAccessException("You are not authorized to assign this role.");
