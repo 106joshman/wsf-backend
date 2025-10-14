@@ -26,13 +26,15 @@ public class UserController : ControllerBase
         {
             // VERIFY USER BEFORE PROFILE UPDATE
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User";
             // Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
-            if (currentUserId != userId.ToString())
+            if (string.IsNullOrEmpty(currentUserId) || (currentUserId != userId.ToString()))
             {
                 return Forbid("You cannot update another user details.");
             }
 
-            var updatedProfile = await _userService.UpdateUserProfile(userId, updateDto);
+            var updatedProfile = await _userService.UpdateUserProfile(userId, updateDto, currentUserRole);
+
             return Ok(updatedProfile);
         }
         catch (UnauthorizedAccessException ex)
@@ -98,7 +100,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost("all-users")]
+    [HttpPost("all")]
     [Authorize]
     public async Task<IActionResult> GetAllUsers(
         [FromQuery] PaginationParams pagination,

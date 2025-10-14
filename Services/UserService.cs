@@ -15,7 +15,7 @@ public class UserService
         _context = context;
     }
 
-    public async Task<UserProfileResponseDto> UpdateUserProfile(Guid userId, UserUpdateDto updateDto)
+    public async Task<UserProfileResponseDto> UpdateUserProfile(Guid userId, UserUpdateDto updateDto, string currentUserRole)
     {
         // FIND USER IN DATABASE
     //    Console.WriteLine($"Received update request for {updateDto.First_name}");
@@ -39,6 +39,23 @@ public class UserService
 
         if (!string.IsNullOrWhiteSpace(updateDto.AvatarUrl))
             user.AvatarUrl = updateDto.AvatarUrl;
+
+        if (!string.IsNullOrWhiteSpace(updateDto.Role))
+        {
+            if (currentUserRole is "Admin" or "super_admin" or "state_admin" or "zonal_admin")
+            {
+                var allowedRoles = new[] { "home_cell_leader", "User", "user" };
+                if (!allowedRoles.Contains(updateDto.Role))
+                {
+                    throw new UnauthorizedAccessException("You are not authorized to assign this role.");
+                }
+                user.Role = updateDto.Role;
+            }
+            else
+            {
+                throw new UnauthorizedAccessException("You are not authorized to change user role.");
+            }
+        }
 
         // SAVE UPDATE MADE
         _context.Users.Update(user);

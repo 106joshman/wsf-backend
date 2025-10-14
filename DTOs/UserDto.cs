@@ -6,6 +6,7 @@ public class UserUpdateDto
     public  string? Last_name { get; set; }
     public  string? PhoneNumber { get; set; }
     public  string? AvatarUrl { get; set; }
+    public  string? Role { get; set; }
 }
 
 public class UserProfileResponseDto
