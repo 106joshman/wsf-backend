@@ -78,6 +78,7 @@ public class AdminAuthService
     public async Task<AdminLoginResponseDto> AdminLogin(LoginDto loginDto)
     {
         var admin = await _context.Admins
+            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Email.ToLower() == loginDto.Email.ToLower()) ?? throw new Exception("Invalid email or password");
 
         // VERIFY PASSWORD
@@ -87,16 +88,15 @@ public class AdminAuthService
         }
 
         // AUTOMATICALLY ACTIVATE ADMIN ON SUCCESSFUL LOGIN
-        bool wasInactive = !admin.IsActive;
         admin.IsActive = true;
 
-        _ = Task.Run(async () =>
-        {
-            // UPDATE LAST LOGIN TIME
-            admin.LastLogin = DateTime.UtcNow;
-            _context.Admins.Update(admin);
-            await _context.SaveChangesAsync();
-        });
+        // UPDATE LAST LOGIN TIME
+        admin.LastLogin = DateTime.UtcNow;
+        _context.Admins.Attach(admin);
+        _context.Entry(admin).State = EntityState.Modified;
+        
+        await _context.SaveChangesAsync();
+
 
         // GENERATE JWT TOKEN
         var token = GenerateJwtToken(admin);
