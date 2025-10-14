@@ -62,14 +62,14 @@ public class UserController : ControllerBase
         try
         {
             // VERIFY USER BEFORE GETTING PROFILE
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (currentUserId != userId.ToString())
-            {
-                return Forbid("FRAUD!!! You cannot profile for another user.");
-            }
+            // var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // if (currentUserId != userId.ToString())
+            // {
+            //     return Forbid("FRAUD!!! You cannot profile for another user.");
+            // }
 
-            var profile = await _userService.GetUserProfile(userId);
-            return Ok(profile);
+            var response = await _userService.GetUserProfile(userId);
+            return Ok(response);
         }
         catch (Exception ex)
         {
