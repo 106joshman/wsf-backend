@@ -78,7 +78,6 @@ public class AdminAuthService
     public async Task<AdminLoginResponseDto> AdminLogin(LoginDto loginDto)
     {
         var admin = await _context.Admins
-            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Email.ToLower() == loginDto.Email.ToLower()) ?? throw new Exception("Invalid email or password");
 
         // VERIFY PASSWORD
