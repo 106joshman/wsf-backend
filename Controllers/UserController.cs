@@ -100,7 +100,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost("all")]
+    [HttpGet("all")]
     [Authorize]
     public async Task<IActionResult> GetAllUsers(
         [FromQuery] PaginationParams pagination,
