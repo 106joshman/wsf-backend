@@ -108,6 +108,8 @@ public class AdminAuthService
             Last_name = admin.Last_name,
             Email = admin.Email,
             Role = admin.Role,
+            Token = token,
+            IsActive = admin.IsActive
             // CreatedAt = admin.CreatedAt,
             // PhoneNumber = admin.PhoneNumber,
             // AvatarUrl = admin.AvatarUrl,
@@ -115,8 +117,6 @@ public class AdminAuthService
             // Country = admin.Country,
             // Address = admin.Address,
             // LastLogin = admin.LastLogin,
-            Token = token,
-            IsActive = admin.IsActive
         };
     }
 

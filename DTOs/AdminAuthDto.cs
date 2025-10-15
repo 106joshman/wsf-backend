@@ -47,20 +47,21 @@ namespace WSFBackendApi.DTOs
     public class AdminLoginResponseDto
     {
         public Guid Id { get; set; }
-        public string? RefreshToken { get; set; }
         public string? First_name { get; set; }
         public string? Last_name { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? AvatarUrl { get; set; }
         public string? Email { get; set; }
         public required string Role { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? LastLogin { get; set; }
-        public string? State { get; set; }
-        public string? Country { get; set; }
-        public string? Address { get; set; }
         public string? Token { get; set; }
         public bool IsActive { get; set; }
+
+        // public string? PhoneNumber { get; set; }
+        // public string? AvatarUrl { get; set; }
+        // public string? RefreshToken { get; set; }
+        // public DateTime CreatedAt { get; set; }
+        // public DateTime? LastLogin { get; set; }
+        // public string? State { get; set; }
+        // public string? Country { get; set; }
+        // public string? Address { get; set; }
     }
 
     // Response DTO for viewing admin details (no token, includes location info)
