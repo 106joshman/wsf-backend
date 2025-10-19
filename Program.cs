@@ -170,10 +170,7 @@ builder.Services.AddCors(options =>
             {
                 var uri = new Uri(origin);
                 return uri.Host == "localhost" ||
-                       uri.Host == "127.0.0.1" ||
-                       uri.Host.StartsWith("192.168.") ||
-                       uri.Host.StartsWith("10.") ||
-                       uri.Host.StartsWith("172.") ||
+                       uri.Host.StartsWith("wsf-admin.netlify.app") ||
                        uri.Host=="http://localhost:3000/";
             })
             .AllowAnyMethod()
