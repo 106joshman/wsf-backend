@@ -44,3 +44,23 @@ public class AuthResponseDto
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLogin { get; set; }
 }
+
+public class GoogleRegisterDto
+{
+    public required string IdToken { get; set; }
+    public required string First_name { get; set; }
+    public required string Last_name { get; set; }
+    public string AvatarUrl { get; set; } = string.Empty;
+    public required string Email { get; set; }
+    public required string GoogleId { get; set; }
+}
+
+public class GoogleLoginDto
+{
+    public required string GoogleId { get; set; }
+    public required string IdToken { get; set; }
+
+    [Required]
+    [EmailAddress]
+    public required string Email { get; set; }
+}

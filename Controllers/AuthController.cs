@@ -20,11 +20,9 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
-        // Console.WriteLine("Received Register request"); // Debugging log
         try
         {
             var response = await _authService.Register(registerDto);
-            // Console.WriteLine("Registration successful"); // Debugging log
             return Ok(response);
         }
         catch (UnauthorizedAccessException ex)
@@ -44,11 +42,32 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("google-register")]
+    public async Task<IActionResult> GoogleRegister([FromBody] GoogleRegisterDto googleRegisterDto)
+    {
+        try
+        {
+            var response = await _authService.GoogleRegister(googleRegisterDto);
+            return Ok(new {message = "Registration successful", response});
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        // Console.WriteLine($"Received Login request: {loginDto.Email}"); // Debugging log
         try
         {
             var response = await _authService.Login(loginDto);
@@ -68,6 +87,28 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             // Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("google-login")]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto googleLoginDto)
+    {
+        try
+        {
+            var response = await _authService.GoogleLogin(googleLoginDto);
+            return Ok(new {message = "Login successful", response});
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
             return BadRequest(new { message = ex.Message });
         }
     }

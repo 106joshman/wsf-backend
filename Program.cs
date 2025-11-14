@@ -157,13 +157,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // ADD CORS POLICY FOR REACT NATIVE
 builder.Services.AddCors(options =>
 {
-    // options.AddPolicy("AllowReactNative", builder =>
-    // {
-    //     builder.AllowAnyOrigin()
-    //         .AllowAnyMethod()
-    //         .AllowAnyHeader();
-    // });
-
     options.AddPolicy("AllowFrontendClients", builder =>
     {
         builder.SetIsOriginAllowed(origin =>

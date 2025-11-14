@@ -287,14 +287,6 @@ public class LocationService
     // ADMIN VERIFY A LOCATION
     public async Task<LocationResponseDto> VerifyLocation(Guid locationId)
     {
-        // var admin = await _context.Users
-        //     .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "admin" || u.Role.ToLower() == "super_admin" || u.Role.ToLower() == "state_admin" || u.Role.ToLower() == "zonal_admin"));
-
-        // if (admin == null)
-        // {
-        //     throw new Exception("Unauthorized: Admin access required");
-        // }
-
         var location = await _context.Locations
             .Include(l => l.User)
             .FirstOrDefaultAsync(l => l.Id == locationId);
