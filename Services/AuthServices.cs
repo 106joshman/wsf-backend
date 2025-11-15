@@ -99,6 +99,7 @@ public class AuthService
             Last_name = googleRegisterDto.Last_name,
             Email = googleRegisterDto.Email,
             AvatarUrl = googleRegisterDto.AvatarUrl,
+            GoogleId = googleRegisterDto.GoogleId,
             Password = null,
             Role = "User",
         };
