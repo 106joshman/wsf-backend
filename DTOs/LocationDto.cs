@@ -64,4 +64,6 @@ public class UpdateLocationDto
     public  string? Contact { get; set; }
     public  string? District { get; set; }
     public  string? Address { get; set; }
+    public string State { get; set; } = string.Empty;
+    public string LGA { get; set; } = string.Empty;
 }
