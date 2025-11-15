@@ -6,14 +6,9 @@ using WSFBackendApi.Models;
 
 namespace WSFBackendApi.Services;
 
-public class UserService
+public class UserService(ApplicationDbContext context)
 {
-    private readonly ApplicationDbContext _context;
-
-    public UserService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDbContext _context = context;
 
     public async Task<UserProfileResponseDto> UpdateUserProfile(Guid userId, UserUpdateDto updateDto, string currentUserRole)
     {

@@ -120,35 +120,25 @@ public class LocationController : ControllerBase
     {
         try
         {
-            // Print all claims for debugging
-            foreach (var claim in User.Claims)
-            {
-            //    Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
-            }
-
             // VERIFY USER BEFORE YOU GET USER LOCATION
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
+            
             if (currentUserId != userId.ToString())
             {
-                return Forbid("You do not have the clearance for this location!");
+                return StatusCode(403, new { message = "You do not have the clearance for this location!" });
             }
 
-            // Log the received userId for debugging
-        // Console.WriteLine($"Received request for user locations with userId: {userId}");
+            // Validate the userId format
+            if (userId == Guid.Empty)
+            {
+                return BadRequest("Invalid user ID format");
+            }
 
-        // Validate the userId format
-        if (userId == Guid.Empty)
-        {
-            return BadRequest("Invalid user ID format");
-        }
-
-            var response = await _locationService.GetUserLocations(userId);
-            return Ok(response);
-        }
+                var response = await _locationService.GetUserLocations(userId);
+                return Ok(response);
+            }
         catch (Exception ex)
         {
-        //    Console.WriteLine($"Error in GetUserLocations: {ex.Message}");
             return BadRequest(ex.Message);
         }
     }
