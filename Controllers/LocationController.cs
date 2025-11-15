@@ -255,9 +255,13 @@ public class LocationController : ControllerBase
             var updatedLocation = await _locationService.UpdateLocation(userId, locationId, updateDto);
             return Ok(updatedLocation);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { message = ex.Message });
+        }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 

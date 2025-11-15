@@ -334,6 +334,12 @@ public class LocationService(ApplicationDbContext context)
             .Where(l => l.Id == locationId && l.UserId == UserId && !l.IsVerified)
             .FirstOrDefaultAsync() ?? throw new Exception("Location not found, unauthorized");
 
+        if (!string.IsNullOrWhiteSpace(updateDto.State) ||
+            !string.IsNullOrWhiteSpace(updateDto.LGA))
+        {
+            throw new InvalidOperationException("You cannot change the State or LGA of a location.");
+        }
+
         if (!string.IsNullOrWhiteSpace(updateDto.Name))
             location.Name = updateDto.Name;
         if (!string.IsNullOrWhiteSpace(updateDto.Description))
@@ -344,14 +350,9 @@ public class LocationService(ApplicationDbContext context)
             location.District = updateDto.District;
         if (!string.IsNullOrWhiteSpace(updateDto.Address))
             location.Address = updateDto.Address;
-        if (!string.IsNullOrWhiteSpace(updateDto.State))
-            location.State = updateDto.State;
-        if (!string.IsNullOrWhiteSpace(updateDto.LGA))
-            location.LGA = updateDto.LGA;
 
         // RUN LOCATION UPDATE BY USER
         _context.Locations.Update(location);
-        // UPDATE CHANGES TO THE DATABASE
         await _context.SaveChangesAsync();
 
         return new LocationResponseDto
