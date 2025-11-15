@@ -122,7 +122,7 @@ public class LocationController : ControllerBase
         {
             // VERIFY USER BEFORE YOU GET USER LOCATION
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
+
             if (currentUserId != userId.ToString())
             {
                 return StatusCode(403, new { message = "You do not have the clearance for this location!" });
@@ -236,19 +236,21 @@ public class LocationController : ControllerBase
     }
 
     // UPDATE LOCATION BY CREATOR ONLY IF LOCATION IS UNVERIFIED BY ADMIN
-    [HttpPut("{userId}/{locationId}")]
+    [HttpPut("{locationId}")]
     [Authorize]
-    public async Task<IActionResult> UpdateLocation(Guid userId, Guid locationId, [FromBody] UpdateLocationDto updateDto)
+    public async Task<IActionResult> UpdateLocation(Guid locationId, [FromBody] UpdateLocationDto updateDto)
     {
         try
         {
             // VERIFY USER BEFORE YOU GET USER LOCATION
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //    Console.WriteLine($"Token user ID: {currentUserId}, URL user ID: {userId}");
-            if (currentUserId != userId.ToString())
+
+            if (string.IsNullOrEmpty(currentUserId) )
             {
                 return Forbid("You cannot update a location for another user.");
             }
+
+            var userId = Guid.Parse(currentUserId);
 
             var updatedLocation = await _locationService.UpdateLocation(userId, locationId, updateDto);
             return Ok(updatedLocation);

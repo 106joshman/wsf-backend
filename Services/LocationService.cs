@@ -5,14 +5,9 @@ using WSFBackendApi.Models;
 
 namespace WSFBackendApi.Services;
 
-public class LocationService
+public class LocationService(ApplicationDbContext context)
 {
-    private readonly ApplicationDbContext _context;
-
-    public LocationService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDbContext _context = context;
 
     public async Task<LocationResponseDto> CreateLocation(Guid UserId, LocationCreateDto locationDto)
     {
