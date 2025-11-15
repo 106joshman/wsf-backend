@@ -23,9 +23,9 @@ public class LocationController : ControllerBase
     }
 
     // CREATE LOCATION ENDPOINT
-    [HttpPost("{userId}")]
+    [HttpPost("create")]
     [Authorize]
-    public async Task<IActionResult> CreateLocation(Guid userId, [FromBody] LocationCreateDto locationDto)
+    public async Task<IActionResult> CreateLocation([FromBody] LocationCreateDto locationDto)
     {
         try
         {
@@ -37,6 +37,8 @@ public class LocationController : ControllerBase
             {
                 return Unauthorized(new { message = "Invalid or missing user credentials" });
             }
+
+            var userId = Guid.Parse(currentUserId);
 
             // ✅ Allow only specific roles to create locations
             var allowedRoles = new[] {UserRoles.HomeCellLeader};
