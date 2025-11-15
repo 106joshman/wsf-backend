@@ -240,11 +240,11 @@ if (app.Environment.IsDevelopment())
 });
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
+app.UseCors("AllowFrontendClients");
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowFrontendClients");
 app.MapControllers();
 
 app.Run();

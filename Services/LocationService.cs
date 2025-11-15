@@ -17,11 +17,7 @@ public class LocationService
     public async Task<LocationResponseDto> CreateLocation(Guid UserId, LocationCreateDto locationDto)
     {
         // VERIFY IF USER EXISTS
-        var user = await _context.Users.FindAsync(UserId);
-        if (user == null)
-        {
-            throw new Exception("User not found");
-        }
+        var user = await _context.Users.FindAsync(UserId) ?? throw new Exception("User not found");
 
         // CREATE LOCATION OBJECT
         var location = new Location
@@ -328,21 +324,8 @@ public class LocationService
     // TO DELETE A LOCATION BY ADMIN
     public async Task DeleteLocation(Guid locationId)
     {
-        // var admin = await _context.Users
-        //     .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin"));
-
-        // if (admin == null)
-        // {
-        //     throw new Exception("Unauthorized: Admin access required");
-        // }
-
         var location = await _context.Locations
-            .FirstOrDefaultAsync(l => l.Id == locationId);
-
-        if (location == null)
-        {
-            throw new Exception("Location not found");
-        }
+            .FirstOrDefaultAsync(l => l.Id == locationId) ?? throw new Exception("Location not found");
 
         _context.Locations.Remove(location);
         await _context.SaveChangesAsync();
@@ -354,12 +337,7 @@ public class LocationService
         var location = await _context.Locations
             .Include(l => l.User)
             .Where(l => l.Id == locationId && l.UserId == UserId && !l.IsVerified)
-            .FirstOrDefaultAsync();
-
-        if (location is null)
-        {
-            throw new Exception("Location not found, unauthorized");
-        }
+            .FirstOrDefaultAsync() ?? throw new Exception("Location not found, unauthorized");
 
         if (!string.IsNullOrWhiteSpace(updateDto.Name))
             location.Name = updateDto.Name;

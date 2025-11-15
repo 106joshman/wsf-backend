@@ -44,11 +44,11 @@ public class LocationController : ControllerBase
             var allowedRoles = new[] {UserRoles.HomeCellLeader};
 
             if (!allowedRoles.Contains(currentUserRole))
-                return Forbid("You do not have permission to create a location.");
+                return StatusCode(403, new { message = "You do not have permission to create a location." });
 
             // ✅ Prevent users from creating locations for other users
             if (currentUserId != userId.ToString())
-                return Forbid("You cannot create a location for another user.");
+                return StatusCode(403, new { message = "You cannot create a location for another user." });
 
             var response = await _locationService.CreateLocation(userId, locationDto);
             return Ok(new { message = "Location created successfully", data = response });
@@ -71,7 +71,7 @@ public class LocationController : ControllerBase
         }
     }
 
-    // // GET LOCATION BY ID BY ADMIN/SUPER_ADMIN/USER/GUEST
+    // GET LOCATION BY ID BY ADMIN/SUPER_ADMIN/USER/GUEST
     [HttpGet("{locationId}")]
     public async Task<IActionResult> GetLocationById(Guid locationId)
     {
