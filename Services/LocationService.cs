@@ -344,6 +344,10 @@ public class LocationService(ApplicationDbContext context)
             location.District = updateDto.District;
         if (!string.IsNullOrWhiteSpace(updateDto.Address))
             location.Address = updateDto.Address;
+        if (!string.IsNullOrWhiteSpace(updateDto.State))
+            location.State = updateDto.State;
+        if (!string.IsNullOrWhiteSpace(updateDto.LGA))
+            location.LGA = updateDto.LGA;
 
         // RUN LOCATION UPDATE BY USER
         _context.Locations.Update(location);

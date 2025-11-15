@@ -247,7 +247,7 @@ public class LocationController : ControllerBase
 
             if (string.IsNullOrEmpty(currentUserId) )
             {
-                return Forbid("You cannot update a location for another user.");
+                return StatusCode(403, new { message = "You cannot update a location for another user." });
             }
 
             var userId = Guid.Parse(currentUserId);
