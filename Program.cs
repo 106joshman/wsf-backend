@@ -120,6 +120,8 @@ builder.Services.AddScoped<AdminAuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<LocationService>();
 builder.Services.AddScoped<OutlineService>();
+builder.Services.AddScoped<PushNotificationService>();
+builder.Services.AddHttpClient<PushNotificationSender>();
 
 // CONFIGURE JWT AUTHENTICATION
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

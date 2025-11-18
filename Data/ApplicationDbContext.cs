@@ -25,6 +25,8 @@ namespace WSFBackendApi.Data
 
         public DbSet<PrayerPoint> PrayerPoints { get; set; }
 
+        public DbSet<PushNotificationToken> PushNotificationTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

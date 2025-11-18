@@ -5,14 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace WSFBackendApi.Services;
 
-public class OutlineService
+public class OutlineService(ApplicationDbContext context, PushNotificationSender pushSender)
 {
-    private readonly ApplicationDbContext _context;
-
-    public OutlineService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDbContext _context = context;
+    private readonly PushNotificationSender _pushSender = pushSender;
 
     // Existing CreateTeachingAsync method (fixed)
     public async Task<TeachingResponseDto> CreateTeachingAsync(TeachingCreateDto dto, Guid adminId, string adminName)
@@ -101,7 +97,7 @@ public class OutlineService
         try
         {
             TeachingResponseDto? teachingResponse = null;
-            List<PrayerOutlineResponseDto> prayerResponses = new();
+            List<PrayerOutlineResponseDto> prayerResponses = [];
 
             // Create Teaching if provided
             if (dto.Teaching != null)
@@ -110,7 +106,7 @@ public class OutlineService
             }
 
             // Create Prayer Outlines if provided
-            if (dto.Prayers != null && dto.Prayers.Any())
+            if (dto.Prayers != null && dto.Prayers.Count != 0)
             {
                 foreach (var prayerDto in dto.Prayers)
                 {
@@ -121,6 +117,11 @@ public class OutlineService
 
             await transaction.CommitAsync();
 
+            await _pushSender.SendToAllAsync(
+                "New WSF Monthly Schedule",
+                $"{dto?.Teaching?.Month ?? ""} monthly schedule is now available."
+            );
+
             return new MonthlyScheduleResponseDto
             {
                 Teaching = teachingResponse,
@@ -129,6 +130,7 @@ public class OutlineService
                 AdminName = adminName,
                 CreatedAt = DateTime.UtcNow
             };
+
         }
         catch
         {

@@ -8,14 +8,9 @@ namespace WSFBackendApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OutlineController : ControllerBase
+public class OutlineController(OutlineService outlineService) : ControllerBase
 {
-    private readonly OutlineService _outlineService;
-
-    public OutlineController(OutlineService outlineService)
-    {
-        _outlineService = outlineService;
-    }
+    private readonly OutlineService _outlineService = outlineService;
 
     // Fixed existing endpoint
     [HttpPost("teaching/create")]

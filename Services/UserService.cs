@@ -1,4 +1,3 @@
-using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using WSFBackendApi.Data;
 using WSFBackendApi.DTOs;
@@ -95,13 +94,8 @@ public class UserService(ApplicationDbContext context)
     public async Task ChangePassword(Guid userId, ChangePasswordDto changePasswordDto)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-        {
-            throw new Exception("User not found");
-        }
-
+            .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new Exception("User not found");
+            
         if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.CurrentPassword, user.Password))
         {
             throw new Exception("Current password is incorrect!");
