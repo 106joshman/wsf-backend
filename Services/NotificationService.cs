@@ -5,13 +5,13 @@ using WSFBackendApi.Models;
 
 namespace WSFBackendApi.Services;
 
-public class PushNotificationService(ApplicationDbContext context)
+public class NotificationService(ApplicationDbContext context)
 {
     private readonly ApplicationDbContext _context = context;
 
     public async Task RegisterToken(RegisterTokenDto registerTokenDto)
     {
-        // Avoid duplicates
+        // AVOID DUPLICATES
         var exists = await _context.PushNotificationTokens.FirstOrDefaultAsync(t => t.ExpoPushToken == registerTokenDto.Token);
 
         if (exists == null)

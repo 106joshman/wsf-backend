@@ -7,9 +7,9 @@ namespace WSFBackendApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PushNotificationController(PushNotificationService pushService) : ControllerBase
+public class NotificationController(NotificationService pushService) : ControllerBase
 {
-    private readonly PushNotificationService _pushService = pushService;
+    private readonly NotificationService _pushService = pushService;
 
     [HttpPost("register-token")]
     public async Task<IActionResult> RegisterToken([FromBody] RegisterTokenDto registerTokenDto)
