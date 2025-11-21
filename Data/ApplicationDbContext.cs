@@ -27,6 +27,8 @@ namespace WSFBackendApi.Data
 
         public DbSet<PushNotificationToken> PushNotificationTokens { get; set; }
 
+        public DbSet<HomeCellSelection> HomeCellSelections { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

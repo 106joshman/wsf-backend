@@ -85,7 +85,8 @@ public class LocationService(ApplicationDbContext context)
                 IsVerified = l.IsVerified,
                 UserId = l.UserId,
                 UserFullName = l.User.First_name + " " + l.User.Last_name,
-                CreatedAt = l.CreatedAt
+                CreatedAt = l.CreatedAt,
+                SelectedCount = _context.HomeCellSelections.Count(s => s.LocationId == l.Id)
             })
             .ToListAsync();
 
@@ -260,13 +261,7 @@ public class LocationService(ApplicationDbContext context)
     {
         // CHECK IF USER IS ADMIN
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin"));
-
-        if (user == null)
-        {
-            throw new Exception("Access denied: Admin access required");
-        }
-
+            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.Equals("Admin", StringComparison.CurrentCultureIgnoreCase) || u.Role.Equals("super_admin", StringComparison.CurrentCultureIgnoreCase))) ?? throw new Exception("Access denied: Admin access required");
         return await GetLocations(new LocationFilterType
         {
             // UserId = adminId,
@@ -280,12 +275,7 @@ public class LocationService(ApplicationDbContext context)
     {
         var location = await _context.Locations
             .Include(l => l.User)
-            .FirstOrDefaultAsync(l => l.Id == locationId);
-
-        if (location == null)
-        {
-            throw new Exception("Location not found");
-        }
+            .FirstOrDefaultAsync(l => l.Id == locationId) ?? throw new Exception("Location not found");
 
         if (location.IsVerified)
         {
@@ -324,6 +314,63 @@ public class LocationService(ApplicationDbContext context)
 
         _context.Locations.Remove(location);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<LocationResponseDto>> SelectHomeCell(Guid userId, Guid locationId)
+    {
+        var location = await _context.Locations
+            .FirstOrDefaultAsync(l => l.Id == locationId && l.IsVerified && l.IsActive)
+            ?? throw new Exception("Location not found");
+
+        var selections = await _context.HomeCellSelections
+            .Where(x => x.UserId == userId)
+            .ToListAsync();
+
+        if (selections.Any(x => x.LocationId == locationId))
+            throw new Exception("You already selected this home cell.");
+
+        if (selections.Count >= 2)
+            throw new Exception("You can only select a maximum of 2 home cells.");
+
+        var selection = new HomeCellSelection
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                LocationId = locationId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+        _context.HomeCellSelections.Add(selection);
+
+        await _context.SaveChangesAsync();
+
+        var selectedLocations = await _context.HomeCellSelections
+            .Where(x => x.UserId == userId)
+            .Include(x => x.Location)
+            .ThenInclude(l => l!.User)
+            .ToListAsync();
+
+        return selectedLocations
+            .Where(s => s.Location != null && s.Location.User != null)
+            .Select(s => new LocationResponseDto
+        {
+            Id = s.Location!.Id,
+            Name = s.Location.Name,
+            Description = s.Location.Description,
+            Latitude = s.Location.Latitude,
+            Longitude = s.Location.Longitude,
+            Address = s.Location.Address,
+            Contact = s.Location.Contact,
+            District = s.Location.District,
+            State = s.Location.State,
+            Country = s.Location.Country,
+            LGA = s.Location.LGA,
+            IsActive = s.Location.IsActive,
+            IsVerified = s.Location.IsVerified,
+            UserId = s.Location.UserId,
+            UserFullName = s.Location.User.First_name + " " + s.Location.User.Last_name,
+            CreatedAt = s.Location.CreatedAt
+        }).ToList();
     }
 
     // TO UPDATE A LOCATION BY USER

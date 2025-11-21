@@ -11,16 +11,10 @@ namespace WSFBackendApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LocationController : ControllerBase
+public class LocationController(LocationService locationService, ApplicationDbContext context) : ControllerBase
 {
-    private readonly LocationService _locationService;
-    private readonly ApplicationDbContext _context;
-
-    public LocationController(LocationService locationService, ApplicationDbContext context)
-    {
-        _locationService = locationService;
-        _context = context;
-    }
+    private readonly LocationService _locationService = locationService;
+    private readonly ApplicationDbContext _context = context;
 
     // CREATE LOCATION ENDPOINT
     [HttpPost("create")]
@@ -254,6 +248,35 @@ public class LocationController : ControllerBase
 
             var updatedLocation = await _locationService.UpdateLocation(userId, locationId, updateDto);
             return Ok(updatedLocation);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("select-cell")]
+    [Authorize(Roles = "User, home_cell_leader")]
+    public async Task<IActionResult> SelectHomeCell([FromBody] SelectHomeCellDto dto)
+    {
+        try
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(currentUserId) )
+            {
+                return StatusCode(403, new { message = "You cannot update a location for another user." });
+            }
+
+            var userId = Guid.Parse(currentUserId);
+
+            var list = await _locationService.SelectHomeCell(userId, dto.LocationId);
+
+            return Ok(new { message = "Home cell selection updated", data = list });
         }
         catch (UnauthorizedAccessException ex)
         {

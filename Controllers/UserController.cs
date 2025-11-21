@@ -45,7 +45,6 @@ public class UserController(UserService userService) : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             // 401 ERROR
-        //    Console.WriteLine($"USER UPDATE ERROR: {ex.Message}"); // Debugging log
             return Unauthorized(new { message = ex.Message });
         }
         catch (KeyNotFoundException ex)
@@ -66,13 +65,6 @@ public class UserController(UserService userService) : ControllerBase
     {
         try
         {
-            // VERIFY USER BEFORE GETTING PROFILE
-            // var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // if (currentUserId != userId.ToString())
-            // {
-            //     return Forbid("FRAUD!!! You cannot profile for another user.");
-            // }
-
             var response = await _userService.GetUserProfile(userId);
             return Ok(response);
         }
@@ -125,4 +117,30 @@ public class UserController(UserService userService) : ControllerBase
             return StatusCode(500, new { message = "An error occurred while fetching users." });
         }
     }
+
+    [HttpGet("my-homecell")]
+    [Authorize]
+    public async Task<IActionResult> GetMyHomeCell()
+    {
+        try
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(currentUserId) )
+            {
+                return StatusCode(403, new { message = "You cannot update a location for another user." });
+            }
+
+            var userId = Guid.Parse(currentUserId);
+
+            var response = await _userService.GetUserHomeCell(userId);
+
+            return Ok(new { data = response });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
 }

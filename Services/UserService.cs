@@ -12,7 +12,6 @@ public class UserService(ApplicationDbContext context)
     public async Task<UserProfileResponseDto> UpdateUserProfile(Guid userId, UserUpdateDto updateDto, string currentUserRole)
     {
         // FIND USER IN DATABASE
-    //    Console.WriteLine($"Received update request for {updateDto.First_name}");
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
 
@@ -70,12 +69,7 @@ public class UserService(ApplicationDbContext context)
     public async Task<UserProfileResponseDto> GetUserProfile(Guid userId)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-        {
-            throw new Exception("User not found");
-        }
+            .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new Exception("User not found");
 
         return new UserProfileResponseDto
         {
@@ -95,7 +89,7 @@ public class UserService(ApplicationDbContext context)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new Exception("User not found");
-            
+
         if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.CurrentPassword, user.Password))
         {
             throw new Exception("Current password is incorrect!");
@@ -215,6 +209,42 @@ public class UserService(ApplicationDbContext context)
             PageNumber = paginationParams.PageNumber,
             PageSize = paginationParams.PageSize,
             TotalPages = (int)Math.Ceiling(totalCount / (double)paginationParams.PageSize)
+        };
+    }
+
+    public async Task<LocationResponseDto?> GetUserHomeCell (Guid userId)
+    {
+        var selection = await _context.HomeCellSelections
+            .Include(x => x.Location)
+            // .ThenInclude(l => l.User)
+            .Where(x => x.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (selection == null)
+            return null;
+
+        var loc = selection.Location;
+
+        return new LocationResponseDto
+        {
+            Id = loc!.Id,
+            Name = loc.Name,
+            Description = loc.Description,
+            Latitude = loc.Latitude,
+            Longitude = loc.Longitude,
+            Address = loc.Address,
+            Contact = loc.Contact,
+            District = loc.District,
+            State =loc.State,
+            Country =loc.Country,
+            LGA =loc.LGA,
+            IsActive = loc.IsActive,
+            IsVerified = loc.IsVerified,
+            UserId = loc.UserId,
+            UserFullName = loc.User.First_name + " " + loc.User.Last_name,
+            CreatedAt = loc.CreatedAt,
+            SelectedCount = await _context.HomeCellSelections
+            .CountAsync(x => x.LocationId == loc.Id)
         };
     }
 }

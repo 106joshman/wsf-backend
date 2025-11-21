@@ -41,7 +41,7 @@ public class TeachingWeek
 
     public string Subtitle { get; set; } = string.Empty;
 
-    public List<string> Content { get; set; } = new List<string>();
+    public List<string> Content { get; set; } = [];
 
     public Teaching? Teaching { get; set; }
 }
@@ -64,9 +64,9 @@ public class PrayerOutline
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
 
-    public ICollection<PrayerSchedule> Schedule { get; set; } = new List<PrayerSchedule>();
+    public ICollection<PrayerSchedule> Schedule { get; set; } = [];
 
-    public ICollection<PrayerPoint> Prayers { get; set; } = new List<PrayerPoint>();
+    public ICollection<PrayerPoint> Prayers { get; set; } = [];
 }
 
 public class PrayerSchedule

@@ -30,6 +30,7 @@ public class LocationResponseDto
     public bool IsActive { get; set; }
     public bool IsVerified { get; set; }
     public Guid UserId { get; set; }
+    public int SelectedCount { get; set; }
     public required string UserFullName { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
