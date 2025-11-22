@@ -189,6 +189,11 @@ public class UserService(ApplicationDbContext context)
             query = query.Where(u => u.Email.Contains(email));
         }
 
+        var selections = await _context.HomeCellSelections
+            // .Where(x => x.UserId == userId)
+            .Select(x => x.LocationId)
+            .ToListAsync();
+
         var totalCount = await query.CountAsync();
 
         var users = await query
@@ -204,6 +209,7 @@ public class UserService(ApplicationDbContext context)
                 PhoneNumber = u.PhoneNumber,
                 AvatarUrl = u.AvatarUrl,
                 Role = u.Role,
+                AssignedCellIds = selections.Count > 0 ? selections : null,
                 CreatedAt = u.CreatedAt,
                 LastLogin = u.LastLogin
             })
