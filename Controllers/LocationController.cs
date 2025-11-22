@@ -288,6 +288,28 @@ public class LocationController(LocationService locationService, ApplicationDbCo
         }
     }
 
+    [HttpDelete("deselect/{locationId}")]
+    [Authorize]
+    public async Task<IActionResult> DeselectHomeCell(Guid locationId)
+    {
+        try
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized(new { message = "Invalid user session" });
+
+            var userId = Guid.Parse(currentUserId);
+
+            var response = await _locationService.DeselectHomeCell(userId, locationId);
+            return Ok(new { message = response });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+
     // DELETE LOCATION ONLY BY ADMIN
     [HttpDelete("{locationId}")]
     [Authorize(Roles = "super_admin,Admin,state_admin,zonal_admin")]

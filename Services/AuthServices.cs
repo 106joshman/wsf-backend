@@ -128,7 +128,7 @@ public class AuthService
     {
         var user = await _context.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Email.Equals(loginDto.Email, StringComparison.CurrentCultureIgnoreCase));
+            .FirstOrDefaultAsync(x => x.Email.ToLower() == loginDto.Email.ToLower());
 
          // CHECK FOR VALID EMAIL AND VERIFY PASSWORD
         if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))

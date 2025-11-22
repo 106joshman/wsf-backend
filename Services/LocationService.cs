@@ -261,7 +261,7 @@ public class LocationService(ApplicationDbContext context)
     {
         // CHECK IF USER IS ADMIN
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.Equals("Admin", StringComparison.CurrentCultureIgnoreCase) || u.Role.Equals("super_admin", StringComparison.CurrentCultureIgnoreCase))) ?? throw new Exception("Access denied: Admin access required");
+            .FirstOrDefaultAsync(u => u.Id == adminId && (u.Role.ToLower() == "Admin" || u.Role.ToLower() == "super_admin")) ?? throw new Exception("Access denied: Admin access required");
         return await GetLocations(new LocationFilterType
         {
             // UserId = adminId,
@@ -371,6 +371,18 @@ public class LocationService(ApplicationDbContext context)
             UserFullName = s.Location.User.First_name + " " + s.Location.User.Last_name,
             CreatedAt = s.Location.CreatedAt
         }).ToList();
+    }
+
+    public async Task<string> DeselectHomeCell (Guid userId, Guid locationId)
+    {
+        var selection = await _context.HomeCellSelections
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.LocationId == locationId)
+            ?? throw new Exception("You have not selected this home cell.");
+
+        _context.HomeCellSelections.Remove(selection);
+        await _context.SaveChangesAsync();
+
+        return "Home cell de-selected successfully";
     }
 
     // TO UPDATE A LOCATION BY USER
