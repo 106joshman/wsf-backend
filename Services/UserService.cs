@@ -69,7 +69,13 @@ public class UserService(ApplicationDbContext context)
     public async Task<UserProfileResponseDto> GetUserProfile(Guid userId)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new Exception("User not found");
+            .FirstOrDefaultAsync(u => u.Id == userId)
+            ?? throw new Exception("User not found");
+
+        var selections = await _context.HomeCellSelections
+            .Where(x => x.UserId == userId)
+            .Select(x => x.LocationId)
+            .ToListAsync();
 
         return new UserProfileResponseDto
         {
@@ -80,6 +86,7 @@ public class UserService(ApplicationDbContext context)
             PhoneNumber = user.PhoneNumber,
             AvatarUrl = user.AvatarUrl,
             Role = user.Role,
+            AssignedCellIds = selections.Count > 0 ? selections : null,
             CreatedAt = user.CreatedAt,
             LastLogin = user.LastLogin
         };
@@ -212,39 +219,47 @@ public class UserService(ApplicationDbContext context)
         };
     }
 
-    public async Task<LocationResponseDto?> GetUserHomeCell (Guid userId)
+    public async Task<List<LocationResponseDto>> GetUserHomeCell (Guid userId)
     {
-        var selection = await _context.HomeCellSelections
-            .Include(x => x.Location)
-            // .ThenInclude(l => l.User)
+        var selections = await _context.HomeCellSelections
             .Where(x => x.UserId == userId)
-            .FirstOrDefaultAsync();
+            .Include(x => x.Location)
+            .ThenInclude(l => l!.User)
+            .ToListAsync();
 
-        if (selection == null)
-            return null;
+        if (selections.Count == 0)
+        return [];
 
-        var loc = selection.Location;
+        var responses = new List<LocationResponseDto>();
 
-        return new LocationResponseDto
+        foreach (var s in selections)
         {
-            Id = loc!.Id,
-            Name = loc.Name,
-            Description = loc.Description,
-            Latitude = loc.Latitude,
-            Longitude = loc.Longitude,
-            Address = loc.Address,
-            Contact = loc.Contact,
-            District = loc.District,
-            State =loc.State,
-            Country =loc.Country,
-            LGA =loc.LGA,
-            IsActive = loc.IsActive,
-            IsVerified = loc.IsVerified,
-            UserId = loc.UserId,
-            UserFullName = loc.User.First_name + " " + loc.User.Last_name,
-            CreatedAt = loc.CreatedAt,
-            SelectedCount = await _context.HomeCellSelections
-            .CountAsync(x => x.LocationId == loc.Id)
-        };
+            var loc = s.Location;
+
+            responses.Add(new LocationResponseDto
+            {
+                Id = loc!.Id,
+                Name = loc.Name,
+                Description = loc.Description,
+                Latitude = loc.Latitude,
+                Longitude = loc.Longitude,
+                Address = loc.Address,
+                Contact = loc.Contact,
+                District = loc.District,
+                State = loc.State,
+                Country = loc.Country,
+                LGA = loc.LGA,
+                IsActive = loc.IsActive,
+                IsVerified = loc.IsVerified,
+                UserId = loc.UserId,
+                UserFullName = loc.User.First_name + " " + loc.User.Last_name,
+                CreatedAt = loc.CreatedAt,
+
+                SelectedCount = await _context.HomeCellSelections
+                    .CountAsync(x => x.LocationId == loc.Id)
+            });
+        }
+
+        return responses;
     }
 }
