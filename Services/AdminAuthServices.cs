@@ -97,7 +97,6 @@ public class AdminAuthService
 
         await _context.SaveChangesAsync();
 
-
         // GENERATE JWT TOKEN
         var token = GenerateJwtToken(admin);
 

@@ -137,13 +137,10 @@ public class AuthService
             throw new Exception("Invalid email or password");
         }
 
-        _ = Task.Run(async () =>
-        {
-            // UPDATE LAST LOGIN TIME
-            user.LastLogin = DateTime.UtcNow;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-        });
+
+        // UPDATE LAST LOGIN TIME
+        user.LastLogin = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
 
         // GENERATE JWT TOKEN
         var token = GenerateJwtToken(user);
@@ -190,13 +187,9 @@ public class AuthService
             _context.Users.Update(user);
         }
 
-        _ = Task.Run(async () =>
-        {
-            // UPDATE LAST LOGIN TIME
-            user.LastLogin = DateTime.UtcNow;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-        });
+        // UPDATE LAST LOGIN TIME
+        user.LastLogin = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
 
         // GENERATE JWT TOKEN
         var token = GenerateJwtToken(user);
