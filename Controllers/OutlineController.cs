@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +19,15 @@ public class OutlineController(OutlineService outlineService) : ControllerBase
     public async Task<IActionResult> CreateTeaching([FromBody] TeachingCreateDto dto)
     {
         var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var adminName = User.FindFirstValue(ClaimTypes.Name);
+        var createdBy = User.FindFirstValue(JwtRegisteredClaimNames.Name)
+            ?? User.FindFirstValue("name")
+            ?? User.FindFirstValue(ClaimTypes.Email)
+            ?? "Admin";
 
         if (string.IsNullOrEmpty(adminId))
             return Unauthorized("User not authenticated");
 
-        var response = await _outlineService.CreateTeachingAsync(dto, Guid.Parse(adminId), adminName ?? "");
+        var response = await _outlineService.CreateTeachingAsync(dto, Guid.Parse(adminId), createdBy ?? "");
         return Ok(response);
     }
 
@@ -33,12 +37,15 @@ public class OutlineController(OutlineService outlineService) : ControllerBase
     public async Task<IActionResult> CreatePrayerOutline([FromBody] PrayerOutlineCreateDto dto)
     {
         var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var adminName = User.FindFirstValue(ClaimTypes.Name);
+        var createdBy = User.FindFirstValue(JwtRegisteredClaimNames.Name)
+            ?? User.FindFirstValue("name")
+            ?? User.FindFirstValue(ClaimTypes.Email)
+            ?? "Admin";
 
         if (string.IsNullOrEmpty(adminId))
             return Unauthorized("User not authenticated");
 
-        var response = await _outlineService.CreatePrayerOutlineAsync(dto, Guid.Parse(adminId), adminName ?? "");
+        var response = await _outlineService.CreatePrayerOutlineAsync(dto, Guid.Parse(adminId), createdBy ?? "");
         return Ok(response);
     }
 
@@ -48,14 +55,17 @@ public class OutlineController(OutlineService outlineService) : ControllerBase
     public async Task<IActionResult> CreateMonthlySchedule([FromBody] MonthlyScheduleCreateDto dto)
     {
         var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var adminName = User.FindFirstValue(ClaimTypes.Name);
+        var createdBy = User.FindFirstValue(JwtRegisteredClaimNames.Name)
+            ?? User.FindFirstValue("name")
+            ?? User.FindFirstValue(ClaimTypes.Email)
+            ?? "Admin";
 
         if (string.IsNullOrEmpty(adminId))
             return Unauthorized("User not authenticated");
 
         try
         {
-            var response = await _outlineService.CreateMonthlyScheduleAsync(dto, Guid.Parse(adminId), adminName ?? "");
+            var response = await _outlineService.CreateMonthlyScheduleAsync(dto, Guid.Parse(adminId), createdBy ?? "");
             return Ok(response);
         }
         catch (Exception ex)

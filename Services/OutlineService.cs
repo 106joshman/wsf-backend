@@ -20,8 +20,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
             TeachingSeries = dto.TeachingSeries,
             Scripture = dto.Scripture,
             Introduction = dto.Introduction ?? string.Empty,
-            AdminId = adminId,
-            AdminName = adminName,
+            CreatedById = adminId,
+            CreatedBy = adminName,
             Weeks = dto.Weeks?.Select(w => new TeachingWeek
             {
                 Title = w.Title,
@@ -42,8 +42,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
             Scripture = teaching.Scripture,
             Introduction = teaching.Introduction,
             Weeks = dto.Weeks,
-            AdminId = teaching.AdminId,
-            AdminName = teaching.AdminName,
+            AdminId = teaching.CreatedById,
+            AdminName = teaching.CreatedBy,
             CreatedAt = teaching.CreatedAt
         };
     }
@@ -55,8 +55,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
         {
             Month = dto.Month,
             Title = dto.Title ?? string.Empty,
-            AdminId = adminId,
-            AdminName = adminName,
+            CreatedById = adminId,
+            CreatedBy = adminName,
             Schedule = dto.Schedule?.Select(s => new PrayerSchedule
             {
                 Sn = s.Sn,
@@ -83,8 +83,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
             Title = prayerOutline.Title,
             Schedule = dto.Schedule,
             Prayers = dto.Prayers,
-            AdminId = prayerOutline.AdminId,
-            AdminName = prayerOutline.AdminName,
+            AdminId = prayerOutline.CreatedById,
+            AdminName = prayerOutline.CreatedBy,
             CreatedAt = prayerOutline.CreatedAt
         };
     }
@@ -177,8 +177,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                     Subtitle = w.Subtitle,
                     Contents = w.Content
                 }).ToList(),
-                AdminId = teaching.AdminId,
-                AdminName = teaching.AdminName,
+                AdminId = teaching.CreatedById,
+                AdminName = teaching.CreatedBy,
                 CreatedAt = teaching.CreatedAt
             };
         }
@@ -202,8 +202,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                 Scripture = pr.Scripture,
                 Verse = pr.Verse
             }).ToList(),
-            AdminId = p.AdminId,
-            AdminName = p.AdminName,
+            AdminId = p.CreatedById,
+            AdminName = p.CreatedBy,
             CreatedAt = p.CreatedAt
         }).ToList();
 
@@ -211,8 +211,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
         {
             Teaching = teachingResponse,
             Prayers = prayerResponses,
-            AdminId = teaching?.AdminId ?? prayers.FirstOrDefault()?.AdminId ?? Guid.Empty,
-            AdminName = teaching?.AdminName ?? prayers.FirstOrDefault()?.AdminName,
+            AdminId = teaching?.CreatedById ?? prayers.FirstOrDefault()?.CreatedById ?? Guid.Empty,
+            AdminName = teaching?.CreatedBy ?? prayers.FirstOrDefault()?.CreatedBy,
             CreatedAt = teaching?.CreatedAt ?? prayers.FirstOrDefault()?.CreatedAt ?? DateTime.UtcNow
         };
     }
@@ -259,8 +259,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                         Subtitle = w.Subtitle,
                         Contents = w.Content
                     }).ToList(),
-                    AdminId = monthTeaching.AdminId,
-                    AdminName = monthTeaching.AdminName,
+                    AdminId = monthTeaching.CreatedById,
+                    AdminName = monthTeaching.CreatedBy,
                     CreatedAt = monthTeaching.CreatedAt
                 };
             }
@@ -284,8 +284,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                     Scripture = pr.Scripture,
                     Verse = pr.Verse
                 }).ToList(),
-                AdminId = p.AdminId,
-                AdminName = p.AdminName,
+                AdminId = p.CreatedById,
+                AdminName = p.CreatedBy,
                 CreatedAt = p.CreatedAt
             }).ToList();
 
@@ -293,8 +293,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
             {
                 Teaching = teachingResponse,
                 Prayers = prayerResponses,
-                AdminId = monthTeaching?.AdminId ?? monthPrayers.FirstOrDefault()?.AdminId ?? Guid.Empty,
-                AdminName = monthTeaching?.AdminName ?? monthPrayers.FirstOrDefault()?.AdminName,
+                AdminId = monthTeaching?.CreatedById ?? monthPrayers.FirstOrDefault()?.CreatedById ?? Guid.Empty,
+                AdminName = monthTeaching?.CreatedBy ?? monthPrayers.FirstOrDefault()?.CreatedBy,
                 CreatedAt = monthTeaching?.CreatedAt ?? monthPrayers.FirstOrDefault()?.CreatedAt ?? DateTime.UtcNow
             });
         }
@@ -338,8 +338,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                         Subtitle = w.Subtitle,
                         Contents = w.Content
                     }).ToList(),
-                    AdminId = teaching.AdminId,
-                    AdminName = teaching.AdminName,
+                    AdminId = teaching.CreatedById,
+                    AdminName = teaching.CreatedBy,
                     CreatedAt = teaching.CreatedAt
                 },
                 Prayers = relatedPrayers.Select(p => new PrayerOutlineResponseDto
@@ -361,12 +361,12 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                         Scripture = pr.Scripture,
                         Verse = pr.Verse
                     }).ToList(),
-                    AdminId = p.AdminId,
-                    AdminName = p.AdminName,
+                    AdminId = p.CreatedById,
+                    AdminName = p.CreatedBy,
                     CreatedAt = p.CreatedAt
                 }).ToList(),
-                AdminId = teaching.AdminId,
-                AdminName = teaching.AdminName,
+                AdminId = teaching.CreatedById,
+                AdminName = teaching.CreatedBy,
                 CreatedAt = teaching.CreatedAt
             });
         }

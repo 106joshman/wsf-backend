@@ -21,9 +21,9 @@ public class Teaching
     public string Introduction { get; set; } = string.Empty;
 
     // Audit fields
-    public Guid AdminId { get; set; }
+    public Guid CreatedById { get; set; }
 
-    public string? AdminName { get; set; }
+    public required string CreatedBy { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -57,9 +57,9 @@ public class PrayerOutline
 
 
     // Audit fields
-    public Guid AdminId { get; set; }
+    public Guid CreatedById { get; set; }
 
-    public string? AdminName { get; set; }
+    public string? CreatedBy { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
