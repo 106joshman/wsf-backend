@@ -30,9 +30,9 @@ public class TeachingResponseDto : TeachingCreateDto
 {
     public Guid Id { get; set; }
 
-    public Guid AdminId { get; set; }
+    public Guid CreatedById { get; set; }
 
-    public string? AdminName { get; set; }
+    public string? CreatedBy { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }
@@ -50,9 +50,9 @@ public class MonthlyScheduleResponseDto
 
     public List<PrayerOutlineResponseDto>? Prayers { get; set; }
 
-    public Guid AdminId { get; set; }
+    public Guid CreatedById { get; set; }
 
-    public string? AdminName { get; set; }
+    public string? CreatedBy { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }

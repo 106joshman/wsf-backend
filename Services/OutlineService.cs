@@ -42,8 +42,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
             Scripture = teaching.Scripture,
             Introduction = teaching.Introduction,
             Weeks = dto.Weeks,
-            AdminId = teaching.CreatedById,
-            AdminName = teaching.CreatedBy,
+            CreatedById = teaching.CreatedById,
+            CreatedBy = teaching.CreatedBy,
             CreatedAt = teaching.CreatedAt
         };
     }
@@ -83,8 +83,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
             Title = prayerOutline.Title,
             Schedule = dto.Schedule,
             Prayers = dto.Prayers,
-            AdminId = prayerOutline.CreatedById,
-            AdminName = prayerOutline.CreatedBy,
+            CreatedById = prayerOutline.CreatedById,
+            CreatedBy = prayerOutline.CreatedBy,
             CreatedAt = prayerOutline.CreatedAt
         };
     }
@@ -126,8 +126,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
             {
                 Teaching = teachingResponse,
                 Prayers = prayerResponses,
-                AdminId = adminId,
-                AdminName = adminName,
+                CreatedById = adminId,
+                CreatedBy = adminName,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -177,8 +177,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                     Subtitle = w.Subtitle,
                     Contents = w.Content
                 }).ToList(),
-                AdminId = teaching.CreatedById,
-                AdminName = teaching.CreatedBy,
+                CreatedById = teaching.CreatedById,
+                CreatedBy = teaching.CreatedBy,
                 CreatedAt = teaching.CreatedAt
             };
         }
@@ -202,8 +202,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                 Scripture = pr.Scripture,
                 Verse = pr.Verse
             }).ToList(),
-            AdminId = p.CreatedById,
-            AdminName = p.CreatedBy,
+            CreatedById = p.CreatedById,
+            CreatedBy = p.CreatedBy,
             CreatedAt = p.CreatedAt
         }).ToList();
 
@@ -211,8 +211,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
         {
             Teaching = teachingResponse,
             Prayers = prayerResponses,
-            AdminId = teaching?.CreatedById ?? prayers.FirstOrDefault()?.CreatedById ?? Guid.Empty,
-            AdminName = teaching?.CreatedBy ?? prayers.FirstOrDefault()?.CreatedBy,
+            CreatedById = teaching?.CreatedById ?? prayers.FirstOrDefault()?.CreatedById ?? Guid.Empty,
+            CreatedBy = teaching?.CreatedBy ?? prayers.FirstOrDefault()?.CreatedBy,
             CreatedAt = teaching?.CreatedAt ?? prayers.FirstOrDefault()?.CreatedAt ?? DateTime.UtcNow
         };
     }
@@ -259,8 +259,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                         Subtitle = w.Subtitle,
                         Contents = w.Content
                     }).ToList(),
-                    AdminId = monthTeaching.CreatedById,
-                    AdminName = monthTeaching.CreatedBy,
+                    CreatedById = monthTeaching.CreatedById,
+                    CreatedBy = monthTeaching.CreatedBy,
                     CreatedAt = monthTeaching.CreatedAt
                 };
             }
@@ -284,8 +284,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                     Scripture = pr.Scripture,
                     Verse = pr.Verse
                 }).ToList(),
-                AdminId = p.CreatedById,
-                AdminName = p.CreatedBy,
+                CreatedById = p.CreatedById,
+                CreatedBy = p.CreatedBy,
                 CreatedAt = p.CreatedAt
             }).ToList();
 
@@ -293,8 +293,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
             {
                 Teaching = teachingResponse,
                 Prayers = prayerResponses,
-                AdminId = monthTeaching?.CreatedById ?? monthPrayers.FirstOrDefault()?.CreatedById ?? Guid.Empty,
-                AdminName = monthTeaching?.CreatedBy ?? monthPrayers.FirstOrDefault()?.CreatedBy,
+                CreatedById = monthTeaching?.CreatedById ?? monthPrayers.FirstOrDefault()?.CreatedById ?? Guid.Empty,
+                CreatedBy = monthTeaching?.CreatedBy ?? monthPrayers.FirstOrDefault()?.CreatedBy,
                 CreatedAt = monthTeaching?.CreatedAt ?? monthPrayers.FirstOrDefault()?.CreatedAt ?? DateTime.UtcNow
             });
         }
@@ -338,8 +338,8 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                         Subtitle = w.Subtitle,
                         Contents = w.Content
                     }).ToList(),
-                    AdminId = teaching.CreatedById,
-                    AdminName = teaching.CreatedBy,
+                    CreatedById = teaching.CreatedById,
+                    CreatedBy = teaching.CreatedBy,
                     CreatedAt = teaching.CreatedAt
                 },
                 Prayers = relatedPrayers.Select(p => new PrayerOutlineResponseDto
@@ -361,12 +361,12 @@ public class OutlineService(ApplicationDbContext context, PushNotificationSender
                         Scripture = pr.Scripture,
                         Verse = pr.Verse
                     }).ToList(),
-                    AdminId = p.CreatedById,
-                    AdminName = p.CreatedBy,
+                    CreatedById = p.CreatedById,
+                    CreatedBy = p.CreatedBy,
                     CreatedAt = p.CreatedAt
                 }).ToList(),
-                AdminId = teaching.CreatedById,
-                AdminName = teaching.CreatedBy,
+                CreatedById = teaching.CreatedById,
+                CreatedBy = teaching.CreatedBy,
                 CreatedAt = teaching.CreatedAt
             });
         }

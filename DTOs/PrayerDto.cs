@@ -27,7 +27,7 @@ public class PrayerPointDto
 public class PrayerOutlineResponseDto : PrayerOutlineCreateDto
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid AdminId { get; set; }
-    public string? AdminName { get; set; }
+    public Guid CreatedById { get; set; }
+    public string? CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
 }
