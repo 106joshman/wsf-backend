@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -88,9 +89,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 $"Password={password};" +
                 "SSL Mode=Require;" +
                 "Trust Server Certificate=true;";
-
-        //    Console.WriteLine($"Using DATABASE_URL with host: {uri.Host}");
-        //    Console.WriteLine($"Parsed - Host: {uri.Host}, Port: {uri.Port}, Database: {uri.AbsolutePath}");
         }
         catch (Exception ex)
         {
@@ -174,6 +172,51 @@ builder.Services.AddCors(options =>
     });
 });
 
+// CONFIGURE RATE LIMITING
+builder.Services.AddRateLimiter(options =>
+{
+    // REGISTER ENDPOINT -- PREVENT BOT SIGN UPS
+    options.AddPolicy("registerPolicy", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3, // MAX 3 SIGN UP REQUESTS PER IP PER MINUTE
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }
+        )
+    );
+
+    // LOGIN ENDPOINT - EXTRA IP-LEVEL PROTECTION
+    options.AddPolicy("loginPolicy", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10, // 10 LOGIN ATTEMPT PER IP PER MINUTE
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            }
+        )
+    );
+
+    // GET LOCATIONS ENDPOINT - PROTECT FROM ABUSE / BOT CALLS
+    options.AddPolicy("getLocationsPolicy", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ctx.User?.Identity?.Name ?? "anonymous",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 30, // 30 REQUESTS PER USER PER MINUTE
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }
+        )
+    );
+});
+
+
 static string EnsureJwtKey(IConfiguration configuration)
 {
     var jwtKey = configuration["Jwt:Key"];
@@ -244,6 +287,7 @@ if (app.Environment.IsDevelopment())
 
 // app.UseHttpsRedirection();
 app.UseCors("AllowFrontendClients");
+app.UseRateLimiter();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

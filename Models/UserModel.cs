@@ -9,37 +9,26 @@ public class User
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
-
     [Required]
     [EmailAddress]
     public required string Email { get; set; }
-
     [Required]
     public required string First_name { get; set; }
-
     [Required]
     public required string Last_name { get; set; }
-
     [DataType(DataType.Password)]
     public string? Password { get; set; }
-
     public string? PhoneNumber { get; set; }
-
     public string? AvatarUrl { get; set; }
-
     public required string Role { get; set; } = "user";
-
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
     public bool IsActive { get; set; } = true;
-
     public string GoogleId {get; set;} = string.Empty;
-
     public DateTime? LastLogin { get; set; }
-
+    public int FailedLoginAttempts { get; set; } = 0;
+    public DateTime? AccountLockedUntil { get; set; }
     // NAVIGATION PROPERTY FOR LOCATIONS
     public ICollection<Location>? Locations { get; set; }
-
     internal static Guid FindFirst(string nameIdentifier)
     {
         throw new NotImplementedException();

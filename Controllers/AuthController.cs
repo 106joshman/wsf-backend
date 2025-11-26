@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WSFBackendApi.DTOs;
 using WSFBackendApi.Models;
 using WSFBackendApi.Services;
@@ -9,14 +10,11 @@ namespace WSFBackendApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(AuthService authService) : ControllerBase
 {
-    private readonly AuthService _authService;
-    public AuthController(AuthService authService)
-    {
-        _authService = authService;
-    }
+    private readonly AuthService _authService = authService;
 
+    [EnableRateLimiting("registerPolicy")]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
@@ -42,6 +40,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [EnableRateLimiting("registerPolicy")]
     [HttpPost("google-register")]
     public async Task<IActionResult> GoogleRegister([FromBody] GoogleRegisterDto googleRegisterDto)
     {
@@ -64,14 +63,13 @@ public class AuthController : ControllerBase
         }
     }
 
-
+    [EnableRateLimiting("loginPolicy")]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
         try
         {
             var response = await _authService.Login(loginDto);
-            // Console.WriteLine($"Login successful for : {loginDto.Email}");
             return Ok(response);
         }
         catch (UnauthorizedAccessException ex)
@@ -86,11 +84,19 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Console.WriteLine($"Registration error: {ex.Message}"); // Debugging log
+            var message = ex.Message.ToLower();
+
+            // ACCOUNT LOCKED (429 - Too Many Requests)
+            if (message.Contains("locked"))
+            {
+                return StatusCode(429, new { message = ex.Message });
+            }
+            
             return BadRequest(new { message = ex.Message });
         }
     }
 
+    [EnableRateLimiting("loginPolicy")]
     [HttpPost("google-login")]
     public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto googleLoginDto)
     {

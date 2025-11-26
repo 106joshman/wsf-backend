@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using WSFBackendApi.Data;
 using WSFBackendApi.DTOs;
@@ -138,6 +139,7 @@ public class LocationController(LocationService locationService, ApplicationDbCo
     }
 
     // GET ALL LOCATIONS THAT HAS BEEN VERIFIED
+    [EnableRateLimiting("getLocationsPolicy")]
     [HttpGet("all")]
     public async Task<IActionResult> GetVerifiedLocations([FromQuery] PaginationParams paginationParams)
     {

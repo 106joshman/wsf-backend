@@ -11,20 +11,13 @@ using WSFBackendApi.Models;
 
 namespace WSFBackendApi.Services;
 
-public class AuthService
+public class AuthService(ApplicationDbContext context, IConfiguration configuration)
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IConfiguration _configuration;
-
-    public AuthService(ApplicationDbContext context, IConfiguration configuration)
-    {
-        _context = context;
-        _configuration = configuration;
-    }
+    private readonly ApplicationDbContext _context = context;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<AuthResponseDto> Register(RegisterDto registerDto)
     {
-        // Console.WriteLine($"Received Login request for {registerDto.Email}");
         // VALIDATE EMAIL AND PASSWORD INPUT
         if (string.IsNullOrWhiteSpace(registerDto.Email) || string.IsNullOrWhiteSpace(registerDto.Password))
         {
@@ -128,17 +121,37 @@ public class AuthService
     {
         var user = await _context.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Email.ToLower() == loginDto.Email.ToLower());
+            .FirstOrDefaultAsync(x => x.Email.ToLower() == loginDto.Email.ToLower())
+            ?? throw new Exception("Invalid credentials");
+
+        // CHECK IF ACCOUNT IS LOCKED
+        if (user.AccountLockedUntil.HasValue && user.AccountLockedUntil > DateTime.UtcNow)
+        {
+            var remainingLockTime = Math.Ceiling((user.AccountLockedUntil.Value - DateTime.UtcNow).TotalMinutes);
+            throw new Exception($"Account is locked. Try again in {remainingLockTime} minute(s).");
+        }
+
+        var isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password);
 
          // CHECK FOR VALID EMAIL AND VERIFY PASSWORD
-        if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
+        if (!isPasswordValid)
         {
-            // Console.WriteLine("User not found");
-            throw new Exception("Invalid email or password");
+            user.FailedLoginAttempts++;
+
+            // LOCK ACCOUNT IF FAILED ATTEMPTS EXCEED 3
+            if (user.FailedLoginAttempts >= 3)
+            {
+                user.AccountLockedUntil = DateTime.UtcNow.AddMinutes(10); // LOCK FOR 15 MINUTES
+                throw new Exception("Account locked due to multiple failed login attempts. Try again later.");
+            }
+
+            await _context.SaveChangesAsync();
+            throw new Exception("Invalid credentials");
         }
 
 
-        // UPDATE LAST LOGIN TIME
+        user.FailedLoginAttempts = 0; // RESET FAILED ATTEMPTS AFTER SUCCESSFUL LOGIN
+        user.AccountLockedUntil = null; // RESET LOCKOUT
         user.LastLogin = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
