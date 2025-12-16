@@ -253,27 +253,23 @@ static string GenerateSecureJwtKey()
 var app = builder.Build();
 
 // Auto-apply migrations on startup
-using (var scope = app.Services.CreateScope())
+using var scope = app.Services.CreateScope();
+var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+try
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
 
-    try
-    {
-    //    Console.WriteLine("Checking and applying database migrations...");
-        dbContext.Database.Migrate();
-    //    Console.WriteLine("Database is up to date!");
-    }
-    catch (Exception ex)
-    {
-       Console.WriteLine($"Migration failed: {ex.Message}");
-        // Don't throw in production - let app start even if migration fails
-        // You can then fix and redeploy
-    }
+    // SEED THE SUPER ADMIN USER TO DATABASE
+    await SuperAdminSeeder.SeedAsync(app.Services);
+    await MultipleAdminsSeeder.SeedAsync(app.Services);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Migration failed: {ex.Message}");
+    // Don't throw in production - let app start even if migration fails
+    // You can then fix and redeploy
 }
 
-// SEED THE SUPER ADMIN USER TO DATABASE
-await SuperAdminSeeder.SeedAsync(app.Services);
-await MultipleAdminsSeeder.SeedAsync(app.Services);
 
 // CONFIGURE THE HTTP REQUEST PIPELINE
 if (app.Environment.IsDevelopment())
