@@ -65,24 +65,37 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
     if (!string.IsNullOrEmpty(databaseUrl))
     {
-        try
+        try // Y#&VM..EEAv459%
         {
             // Parse the DATABASE_URL format: postgresql://user:password@host:port/database
-            var uri = new Uri(databaseUrl);
+            // var uri = new Uri(databaseUrl);
 
-            // Extract username and password safely
-            var userInfo = uri.UserInfo.Split(':');
-            var username = userInfo.Length > 0 ? userInfo[0] : "";
-            var password = userInfo.Length > 1 ? userInfo[1] : "";
+            // // Extract username and password safely
+            // var userInfo = uri.UserInfo.Split(':');
+            // var username = userInfo.Length > 0 ? userInfo[0] : "";
+            // var password = userInfo.Length > 1 ? userInfo[1] : "";
 
-            // Extract database name (remove leading slash)
-            var database = uri.AbsolutePath.TrimStart('/');
+            // // Extract database name (remove leading slash)
+            // var database = uri.AbsolutePath.TrimStart('/');
 
-            // Use default port 5432 if not specified
-            var port = uri.Port > 0 ? uri.Port : 5432;
+            // // Use default port 5432 if not specified
+            // var port = uri.Port > 0 ? uri.Port : 5432;
+
+            // Remove the scheme
+            var url = databaseUrl.Replace("postgresql://", "");
+            var atSplit = url.Split('@', 2);
+            var userPass = atSplit[0].Split(':', 2);
+            var hostDb = atSplit[1].Split('/', 2);
+            var hostPort = hostDb[0].Split(':', 2);
+
+            var username = userPass[0];
+            var password = userPass.Length > 1 ? userPass[1] : "";
+            var host = hostPort[0];
+            var port = hostPort.Length > 1 ? hostPort[1] : "5432";
+            var database = hostDb.Length > 1 ? hostDb[1] : "";
 
             connectionString =
-                $"Host={uri.Host};" +
+                $"Host={host};" +
                 $"Port={port};" +
                 $"Database={database};" +
                 $"Username={username};" +
