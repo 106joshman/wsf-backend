@@ -94,14 +94,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             var port = hostPort.Length > 1 ? hostPort[1] : "5432";
             var database = hostDb.Length > 1 ? hostDb[1] : "";
 
-            connectionString =
-                $"Host={host};" +
-                $"Port={port};" +
-                $"Database={database};" +
-                $"Username={username};" +
-                $"Password={password};" +
-                "SSL Mode=Require;" +
-                "Trust Server Certificate=true;";
+            connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
         }
         catch (Exception ex)
         {
